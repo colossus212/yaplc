@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<EmBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="..\..\src\plc_runtime\bsp\stm32f4\plc_backup.c" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1314" topLine="36" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\bsp\stm32f4\plc_hw.c" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="621" topLine="12" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\bsp\stm32f4\plc_rtc.c" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="144" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\bsp\stm32f4\plc_serial.c" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3165" topLine="81" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\bsp\stm32f4\plc_tick.c" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2013" topLine="22" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\main.c" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1200" topLine="45" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\plc_abi.h" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1184" topLine="27" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\plc_app_default.c" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="679" topLine="16" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\plc_dbg.c" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="38" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\plc_dbg.h" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1265" topLine="21" />
+		</Cursor>
+	</File>
+	<File name="..\..\src\plc_runtime\plc_glue_rte.c" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1317" topLine="60" />
+		</Cursor>
+	</File>
+</EmBlocks_layout_file>
