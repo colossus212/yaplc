@@ -274,6 +274,14 @@ void dbg_handler(void)
             plc_dbg_ctrl.tmp_len = 4;
             plc_dbg_ctrl.tmp = (unsigned char *)&plc_dbg_ctrl.data_len;
         }
+        else
+	{
+	    plc_dbg_ctrl.state = PUT_DEBUG_LEN;
+	    plc_dbg_ctrl.data_len = 0; //No data available
+	    
+	    plc_dbg_ctrl.tmp_len = 4;
+            plc_dbg_ctrl.tmp = (unsigned char *)&plc_dbg_ctrl.data_len;
+	}
     }
     break;
 
