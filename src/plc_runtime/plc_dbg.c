@@ -268,20 +268,16 @@ void dbg_handler(void)
         if( 0 == plc_app->dbg_data_get( &plc_dbg_ctrl.tr.get_val.tick, (long unsigned int *)&plc_dbg_ctrl.data_len, (void **)&plc_dbg_ctrl.data ) )
         {
             //Transfer data
-            plc_dbg_ctrl.state = PUT_DEBUG_LEN;
             plc_dbg_ctrl.data_len += 4; //Must transfer tick
-
-            plc_dbg_ctrl.tmp_len = 4;
-            plc_dbg_ctrl.tmp = (unsigned char *)&plc_dbg_ctrl.data_len;
         }
         else
-	{
-	    plc_dbg_ctrl.state = PUT_DEBUG_LEN;
-	    plc_dbg_ctrl.data_len = 0; //No data available
-	    
-	    plc_dbg_ctrl.tmp_len = 4;
-            plc_dbg_ctrl.tmp = (unsigned char *)&plc_dbg_ctrl.data_len;
-	}
+        {
+            plc_dbg_ctrl.data_len = 0; //No data available
+        }
+        plc_dbg_ctrl.state = PUT_DEBUG_LEN;
+
+        plc_dbg_ctrl.tmp_len = 4;
+        plc_dbg_ctrl.tmp = (unsigned char *)&plc_dbg_ctrl.data_len;
     }
     break;
 
@@ -435,7 +431,7 @@ void dbg_handler(void)
     break;
     //==========================================================================================
     case PUT_ID_LEN:
-    //==========================================================================================
+        //==========================================================================================
     case PUT_LC_LEN:
     {
         if( plc_dbg_ctrl.tmp_len )
@@ -479,14 +475,14 @@ void dbg_handler(void)
             plc_dbg_ctrl.state = PUT_MSG_LEN;
 
             plc_dbg_ctrl.data_len = plc_app->log_msg_get(
-                                          plc_dbg_ctrl.tr.get_log_msg.level,
-                                          plc_dbg_ctrl.tr.get_log_msg.msg_id,
-                                          &plc_dbg_ctrl.tr_buf.log_msg[0],
-                                          256,
-                                          &plc_dbg_ctrl.tr.get_log_msg.tick,
-                                          &plc_dbg_ctrl.tr.get_log_msg.sec,
-                                          &plc_dbg_ctrl.tr.get_log_msg.nsec
-                                      );
+                                        plc_dbg_ctrl.tr.get_log_msg.level,
+                                        plc_dbg_ctrl.tr.get_log_msg.msg_id,
+                                        &plc_dbg_ctrl.tr_buf.log_msg[0],
+                                        256,
+                                        &plc_dbg_ctrl.tr.get_log_msg.tick,
+                                        &plc_dbg_ctrl.tr.get_log_msg.sec,
+                                        &plc_dbg_ctrl.tr.get_log_msg.nsec
+                                    );
 
             plc_dbg_ctrl.data_len += 12; // Tick+Sec+NSec+Data
             plc_dbg_ctrl.data = (unsigned char *)&plc_dbg_ctrl.tr_buf.log_msg[0];
