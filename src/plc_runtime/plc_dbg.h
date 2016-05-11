@@ -72,6 +72,9 @@ extern void dbg_serial_init(void);
 
 #define DBG_CMD_IDLE      0x6a
 
+//Timer threshold
+#define PLC_DBG_TIMER_THR 500
+
 typedef union
 {
     unsigned long long align_header; //Align for biggest type
@@ -115,6 +118,7 @@ typedef union
 typedef struct
 {
     int state;
+    uint32_t timer;
     unsigned char cmd;
 
     unsigned char tmp_len;
@@ -128,6 +132,8 @@ typedef struct
     tr_vars_t tr;
     tr_buf_t tr_buf;
 }plc_dbg_proto_t;
+
+
 
 #define PLC_STATE_STOPED 0x55
 #define PLC_STATE_STARTED 0xAA

@@ -113,16 +113,27 @@ void dbg_init(void)
 {
     dbg_serial_init();
     plc_dbg_ctrl.state = GET_CMD;
+    plc_dbg_ctrl.timer = 0;
     plc_dbg_ctrl.data_hook = (void(*)(void))0;
 }
 
 void dbg_handler(void)
 {
+    //Check timer, break connection on timeout
+    if( PLC_TIMER( plc_dbg_ctrl.timer ) > PLC_DBG_TIMER_THR )
+    {
+        plc_dbg_ctrl.state = GET_CMD;
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+        plc_dbg_ctrl.data_hook = (void(*)(void))0;
+    }
+    //Bebug FSM
     switch( plc_dbg_ctrl.state )
     {
     case GET_CMD:
     default:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( dbg_serial_read(&plc_dbg_ctrl.cmd, 1) )
         {
             //Handle command stage 1 (Immediate actions)
@@ -157,6 +168,8 @@ void dbg_handler(void)
 
     case PUT_ACK:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( plc_dbg_ctrl.tmp_len )
         {
             int write_res;
@@ -173,6 +186,7 @@ void dbg_handler(void)
 
     case PARSE_CMD:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
         //Handle command stage 2
         switch( plc_dbg_ctrl.cmd )
         {
@@ -265,6 +279,8 @@ void dbg_handler(void)
     //==========================================================================================
     case GET_DEBUG_DATA:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( 0 == plc_app->dbg_data_get( &plc_dbg_ctrl.tr.get_val.tick, (long unsigned int *)&plc_dbg_ctrl.data_len, (void **)&plc_dbg_ctrl.data ) )
         {
             //Transfer data
@@ -283,6 +299,8 @@ void dbg_handler(void)
 
     case PUT_DEBUG_LEN:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( plc_dbg_ctrl.tmp_len )
         {
             int write_res;
@@ -309,6 +327,8 @@ void dbg_handler(void)
 
     case PUT_DEBUG_TICK:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( plc_dbg_ctrl.tmp_len )
         {
             int write_res;
@@ -330,12 +350,15 @@ void dbg_handler(void)
         if( plc_dbg_ctrl.tmp_len )
         {
             int read_res;
+            //Must read before timeout!
             read_res = dbg_serial_read( plc_dbg_ctrl.tmp, plc_dbg_ctrl.tmp_len );
             plc_dbg_ctrl.tmp     += read_res;
             plc_dbg_ctrl.tmp_len  -= read_res;
         }
         else
         {
+            PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
             if( plc_dbg_ctrl.data_len > 0 )
             {
                 plc_dbg_ctrl.state = GET_VAR_IDX;
@@ -355,14 +378,17 @@ void dbg_handler(void)
     {
         if( plc_dbg_ctrl.tmp_len )
         {
+            //Must read before timeout!
             int read_res;
             read_res = dbg_serial_read( plc_dbg_ctrl.tmp, plc_dbg_ctrl.tmp_len );
             plc_dbg_ctrl.tmp         += read_res;
-            plc_dbg_ctrl.tmp_len      -= read_res;
-            plc_dbg_ctrl.data_len     -= read_res;
+            plc_dbg_ctrl.tmp_len     -= read_res;
+            plc_dbg_ctrl.data_len    -= read_res;
         }
         else
         {
+            PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
             plc_dbg_ctrl.state = GET_FORCE_LEN;
         }
     }
@@ -372,6 +398,8 @@ void dbg_handler(void)
     {
         if( dbg_serial_read( &plc_dbg_ctrl.tmp_len, 1) )
         {
+            PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
             plc_dbg_ctrl.data_len--;
             if( 0 == plc_dbg_ctrl.tmp_len )
             {
@@ -405,14 +433,17 @@ void dbg_handler(void)
         if( plc_dbg_ctrl.tmp_len )
         {
             int read_res;
+            //Must read before timeout!
             read_res = dbg_serial_read( plc_dbg_ctrl.data, plc_dbg_ctrl.tmp_len );
             plc_dbg_ctrl.data        += read_res;
-            plc_dbg_ctrl.tmp_len      -= (unsigned char)read_res;
-            plc_dbg_ctrl.data_len     -= read_res;
+            plc_dbg_ctrl.tmp_len     -= (unsigned char)read_res;
+            plc_dbg_ctrl.data_len    -= read_res;
             //Panic on error
         }
         else
         {
+            PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
             plc_app->dbg_var_register( plc_dbg_ctrl.tr.set_val.var_idx, &plc_dbg_ctrl.tr_buf.data[0] );
             if( plc_dbg_ctrl.data_len <= 0 )
             {
@@ -434,6 +465,8 @@ void dbg_handler(void)
         //==========================================================================================
     case PUT_LC_LEN:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( plc_dbg_ctrl.tmp_len )
         {
             int write_res;
@@ -453,6 +486,8 @@ void dbg_handler(void)
     {
         if( dbg_serial_read( &plc_dbg_ctrl.tr.get_log_msg.level, 1) )
         {
+            PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
             plc_dbg_ctrl.state = GET_MSG_ID;
             plc_dbg_ctrl.tmp_len = 4;
             plc_dbg_ctrl.tmp = (unsigned char *)&plc_dbg_ctrl.tr.get_log_msg.msg_id;
@@ -465,6 +500,7 @@ void dbg_handler(void)
         if( plc_dbg_ctrl.tmp_len )
         {
             int read_res;
+            //Must read before timeout
             read_res = dbg_serial_read( plc_dbg_ctrl.tmp, plc_dbg_ctrl.tmp_len );
             plc_dbg_ctrl.tmp         += read_res;
             plc_dbg_ctrl.tmp_len      -= read_res;
@@ -472,6 +508,8 @@ void dbg_handler(void)
         }
         else
         {
+            PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
             plc_dbg_ctrl.state = PUT_MSG_LEN;
 
             plc_dbg_ctrl.data_len = plc_app->log_msg_get(
@@ -495,6 +533,8 @@ void dbg_handler(void)
 
     case PUT_MSG_LEN:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( plc_dbg_ctrl.tmp_len )
         {
             int write_res;
@@ -515,6 +555,8 @@ void dbg_handler(void)
 
     case PUT_MSG_TICK:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( plc_dbg_ctrl.tmp_len )
         {
             int write_res;
@@ -536,6 +578,8 @@ void dbg_handler(void)
 
     case PUT_MSG_SEC:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( plc_dbg_ctrl.tmp_len )
         {
             int write_res;
@@ -557,6 +601,8 @@ void dbg_handler(void)
 
     case PUT_MSG_NSEC:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( plc_dbg_ctrl.tmp_len )
         {
             int write_res;
@@ -575,6 +621,8 @@ void dbg_handler(void)
     //==========================================================================================
     case PUT_DATA:
     {
+        PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
+
         if( plc_dbg_ctrl.data_len > 0 )
         {
             int write_res;
