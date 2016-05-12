@@ -1,6 +1,7 @@
 #include "plc_dbg.h"
 
 #include <plc_backup.h>
+#include <plc_wait_tmr.h>
 #include <plc_hw.h>
 
 #include <plc_config.h>

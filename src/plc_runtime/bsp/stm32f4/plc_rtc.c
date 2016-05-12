@@ -15,9 +15,9 @@ uint32_t plc_rtc_is_ok(void)
 
 void plc_rtc_init( tm* time )
 {
-    uint32_t i;
     uint32_t tmp=0;
     uint32_t year;
+    uint32_t i;
 
     rcc_periph_clock_enable( RCC_PWR );
 
@@ -25,40 +25,18 @@ void plc_rtc_init( tm* time )
 
     PLC_BKP_RTC_IS_OK = 0;
 
-    /* Try to use LSE oscillator */
+    /* LSE oscillator clock used as the RTC clock */
+    RCC_BDCR |= 0x00000100;
     RCC_BDCR |= RCC_BDCR_LSEON;
-
-    for( i=0; i<1000000; i++ )
-    {
-        if(RCC_BDCR & RCC_BDCR_LSERDY)
-        {
-            break;
-        }
-    }
-
-    if(RCC_BDCR & RCC_BDCR_LSERDY)
-    {
-        RCC_BDCR |= 0x00000100;
-    }
-    else
-    {
-        /* Fallback to LSI oscilator */
-        RCC_BDCR &= ~RCC_BDCR_LSEON;
-        RCC_CSR  |=  RCC_CSR_LSION;
-        RCC_BDCR |=  0x00000200;
-        /*This is an error*/
-        plc_hw_status |= PLC_HW_ERR_LSE;
-    }
 
     rcc_periph_clock_enable( RCC_RTC );
 
     rtc_unlock();
 
     RTC_ISR |= RTC_ISR_INIT;
-    /* LSE depends on external wiring, must limit number of iterations*/
-    for( i=0; i<1000000; i++ )
+    for(i=0; i<1000000; i++)
     {
-        if(RTC_ISR & RTC_ISR_INITF)
+        if( RTC_ISR & RTC_ISR_INITF )
         {
             break;
         }
@@ -66,9 +44,11 @@ void plc_rtc_init( tm* time )
 
     if( !(RTC_ISR & RTC_ISR_INITF) )
     {
-        /*This is an error*/
         plc_hw_status |= PLC_HW_ERR_LSE;
 
+        RTC_ISR &= ~RTC_ISR_INIT;
+        pwr_enable_backup_domain_write_protect();
+        return;
     }
 
     rtc_set_prescaler( 0x1FF, 0x3F );

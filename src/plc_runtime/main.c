@@ -8,6 +8,7 @@
 
 #include <plc_hw.h>
 #include <plc_clock.h>
+#include <plc_wait_tmr.h>
 #include <plc_backup.h>
 #include <plc_rtc.h>
 #include <plc_tick.h>
@@ -35,25 +36,18 @@ const tm default_date =
     .tm_year = 2016
 };
 
+const char plc_start_msg[] = "This is YAPLC!";
+
 int main(void)
 {
     PLC_DISABLE_INTERRUPTS();
 
+    plc_app_default_init();
     plc_clock_setup();
+    plc_wait_tmr_init();
     plc_hw_init();
 
-    if( plc_check_hw() )
-    {
-        // H/W check failed!!!
-        plc_tick_setup( 0, 1000000ull );
-        PLC_ENABLE_INTERRUPTS();
-
-        while(1)
-        {
-            plc_panic_hw();
-        }
-    }
-    else
+    if( !plc_check_hw() )
     {
         // H/W is OK, continue init...
         plc_backup_init();
@@ -92,14 +86,14 @@ int main(void)
         plc_app->start(0,0);
     }
 
-    //plc_start_delay();
+    plc_app->log_msg_post(LOG_INFO, (char *)plc_start_msg, sizeof(plc_start_msg));
 
     while(1)
     {
         //Hadnle debug connection
         dbg_handler();
         //Heart bit
-        PLC_BLINK();
+        plc_heart_beat();
         //App run
         if( plc_tick_flag )
         {
@@ -107,11 +101,6 @@ int main(void)
             if( PLC_STATE_STARTED == plc_state )
             {
                 plc_app->run();
-            }
-            // Check clock system status
-            if( plc_hw_status & PLC_HW_ERR_HSE )
-            {
-                plc_error_hse();
             }
         }
     }

@@ -129,6 +129,11 @@ SECTIONS
 		_ebss = .;
 	} >ram
 
+	.plc_log_buf_sec : {
+		KEEP (*(.plc_log_buf_sec))
+		. = ALIGN(4);
+	} >appram
+
 	. = ALIGN(4);
 	end = .;
 }

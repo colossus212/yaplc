@@ -24,18 +24,8 @@ bool plc_check_hw(void);
 bool plc_dbg_jmpr_get(void);
 bool plc_rst_jmpr_get(void);
 
-void plc_panic_hw(void);
-void plc_panic_app(void);
-
-void plc_start_delay(void);
-
-void plc_error_hse(void);
+void plc_heart_beat(void);
 
 void enter_boot_mode(void);
-
-extern uint32_t plc_sys_timer;
-
-#define PLC_TIMER(t) (plc_sys_timer - t)
-#define PLC_CLEAR_TIMER(t) (t = plc_sys_timer)
 
 #endif /* _PLC_HW_H_ */

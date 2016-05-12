@@ -47,6 +47,7 @@ typedef struct
     uint32_t (*log_cnt_get)(uint8_t);
     uint32_t (*log_msg_get)(uint8_t, uint32_t, char*, uint32_t, uint32_t*, uint32_t*, uint32_t*);
     void     (*log_cnt_reset)(void);
+    int (*log_msg_post)(uint8_t, char*, uint32_t);
 }
 plc_app_abi_t;
 

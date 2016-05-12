@@ -23,10 +23,15 @@
 /* Define memory regions. */
 MEMORY
 {
-	rom (rx) : ORIGIN = 0x08000000, LENGTH = 32K
-	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 8K
-	appram (rwx) : ORIGIN = 0x20002000, LENGTH = 120K
+	rom       (rx)  : ORIGIN = 0x08000000, LENGTH = 32K
+    app_flash (rx)  : ORIGIN = 0x08008000, LENGTH = 992K
+	ram       (rwx) : ORIGIN = 0x20000000, LENGTH = 8K
+	appram    (rwx) : ORIGIN = 0x20002000, LENGTH = 120K
 }
+
+PROVIDE( _stack     = ORIGIN(appram) + LENGTH(appram) );
+PROVIDE( _app_start = ORIGIN(app_flash)               );
+PROVIDE( _app_end   = _app_start + LENGTH(app_flash)  );
 
 /* Include the common ld script. */
 /*
@@ -124,9 +129,12 @@ SECTIONS
 		_ebss = .;
 	} >ram
 
+	.plc_log_buf_sec : {
+		KEEP (*(.plc_log_buf_sec))
+		. = ALIGN(4);
+	} >appram
+
 	. = ALIGN(4);
 	end = .;
 }
-
-PROVIDE(_stack = ORIGIN(appram) + LENGTH(appram));
 

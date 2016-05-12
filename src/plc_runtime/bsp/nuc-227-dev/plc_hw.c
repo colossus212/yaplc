@@ -8,6 +8,9 @@
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/scb.h>
 
+#include <plc_abi.h>
+
+#include <plc_wait_tmr.h>
 #include <plc_hw.h>
 #include <plc_config.h>
 
@@ -36,27 +39,6 @@ void plc_error_hse(void)
 {
     ///Write your code here!!!
     return;  ///Must return!!!
-}
-
-void plc_panic_hw(void)
-{
-    while(1)
-    {
-        ///Write your code here!!!
-    }
-}
-
-uint32_t plc_sys_timer = 0;
-
-void PLC_WAIT_TMR_ISR(void)
-{
-    if (timer_get_flag(PLC_WAIT_TMR, TIM_SR_UIF))
-    {
-
-		/* Clear compare interrupt flag. */
-		timer_clear_flag(PLC_WAIT_TMR, TIM_SR_UIF);
-        plc_sys_timer++;
-    }
 }
 
 //Led blink timer
@@ -134,26 +116,9 @@ void plc_hw_init(void)
     rcc_periph_clock_enable(PLC_I8_PERIPH);
     gpio_mode_setup(PLC_I8_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I8_PIN);
 
-
-    //Wait timer config, basic timers TIM6 and TIM7 may be used
-    rcc_periph_clock_enable( PLC_WAIT_TMR_PERIPH );
-
-    timer_reset            ( PLC_WAIT_TMR );
-    timer_set_prescaler    ( PLC_WAIT_TMR, (( rcc_apb1_frequency * 2 )/ 1000000 - 1) ); //1MHz
-    timer_disable_preload  ( PLC_WAIT_TMR );
-    timer_continuous_mode  ( PLC_WAIT_TMR );
-    timer_set_period       ( PLC_WAIT_TMR, 1000 ); //1KHz
-
-	timer_enable_counter    ( PLC_WAIT_TMR );
-	timer_enable_irq        ( PLC_WAIT_TMR, TIM_DIER_UIE);
-
-	nvic_enable_irq( PLC_WAIT_TMR_VECTOR );
-
 	//Enable power interface
 	rcc_periph_clock_enable( RCC_PWR );
 }
-
-
 
 void enter_boot_mode(void)
 {
@@ -175,6 +140,13 @@ void plc_start_delay(void)
 
 extern uint32_t plc_backup_satus;
 
+extern plc_app_abi_t * plc_app;
+
+static bool hse_post_flag = true;
+const char plc_hse_err_msg[] = "HSE oscilator failed!";
+static bool lse_post_flag = true;
+const char plc_lse_err_msg[] = "LSE oscilator failed!";
+
 void plc_heart_beat(void)
 {
     uint32_t blink_thr;
@@ -193,11 +165,21 @@ void plc_heart_beat(void)
         //if(  *(uint8_t *)BKPSRAM_BASE == 1 )
         if(plc_hw_status  & PLC_HW_ERR_HSE)
         {
+            if( hse_post_flag )
+            {
+                hse_post_flag = false;
+                plc_app->log_msg_post(LOG_CRITICAL, (char *)plc_hse_err_msg, sizeof(plc_hse_err_msg));
+            }
             gpio_set( PLC_LED2_PORT, PLC_LED2_PIN );
         }
         //if( *( (uint8_t *)BKPSRAM_BASE + 1) == 1 )
         if(plc_hw_status  & PLC_HW_ERR_LSE)
         {
+            if( lse_post_flag )
+            {
+                lse_post_flag = false;
+                plc_app->log_msg_post(LOG_CRITICAL, (char *)plc_lse_err_msg, sizeof(plc_lse_err_msg));
+            }
             gpio_set( PLC_LED3_PORT, PLC_LED3_PIN );
         }
     }
