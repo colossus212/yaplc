@@ -42,7 +42,8 @@ const plc_app_abi_t plc_glue_app =
 
     .log_cnt_get   = GetLogCount,
     .log_msg_get   = GetLogMessage,
-    .log_cnt_reset = ResetLogCount
+    .log_cnt_reset = ResetLogCount,
+    .log_msg_post  = LogMessage
 };
 
 #include <plc_rtc.h>
