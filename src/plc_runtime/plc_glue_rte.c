@@ -10,6 +10,36 @@
 #include <plc_hw.h>
 
 
+/* Portions of standart library to run Linker with -nostdlib -lgcc */
+void *memset(void *dest, int c, size_t count)
+{
+    char * d;
+
+    c &= 0xff;
+    d = (char *)dest;
+
+    while(count--)
+    {
+        *d++ = (char)c;
+    }
+    return (void *)d;
+}
+
+void *memcpy(void *dest, const void *src, size_t count)
+{
+    char *d, *s;
+
+    d = (char *)dest;
+    s = (char *)src;
+
+    while(count--)
+    {
+        *d++ = *s++;
+    }
+    return (void *)d;
+}
+/* Portions of standart library*/
+
 __attribute__ ((section(".plc_rte_sec"))) plc_rte_abi_t plc_glue_rte =
 {
     .get_time  = plc_rtc_time_get,

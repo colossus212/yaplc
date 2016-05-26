@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="main.c" open="1" top="0" tabpos="1">
+		<Cursor position="637" topLine="150" />
+	</File>
+	<File name="plc_iom.c" open="1" top="1" tabpos="3">
+		<Cursor position="3609" topLine="30" />
+	</File>
+	<File name="plc_iom.h" open="1" top="0" tabpos="2">
+		<Cursor position="1179" topLine="18" />
+	</File>
+	<File name="plc_iom_abi.h" open="1" top="0" tabpos="4">
+		<Cursor position="747" topLine="0" />
+	</File>
+	<File name="plc_ioproto_template.c" open="1" top="0" tabpos="5">
+		<Cursor position="457" topLine="0" />
+	</File>
+	<File name="plc_ioproto_template.h" open="0" top="0" tabpos="4">
+		<Cursor position="136" topLine="0" />
+	</File>
+</CodeBlocks_layout_file>

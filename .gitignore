@@ -66,6 +66,7 @@ doc/doxygen/html/**
 ##################
 src/stm32flash/stm32flash
 src/stm32flash/stm32flash.1
+stm32flash
 # Makefiles #
 #############
 Makefile

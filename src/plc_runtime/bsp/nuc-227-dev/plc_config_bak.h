@@ -34,6 +34,6 @@
 #define PLC_BKP_VER2_OFFSET      4
 #define PLC_BKP_RTC_IS_OK_OFFSET 8
 
-#define PLC_APP ((plc_app_abi_t *)0x08008000)
+#include <plc_glue_dbg.h>
 
 #endif /* _PLC_CONFIG_H_ */
