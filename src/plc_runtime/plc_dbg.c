@@ -143,14 +143,14 @@ void dbg_handler(void)
             case DBG_CMD_START:
             {
                 plc_state = PLC_STATE_STARTED;
-                plc_app->start(0,0);
+                plc_curr_app->start(0,0);
             }
             break;
 
             case DBG_CMD_STOP:
             {
                 plc_state = PLC_STATE_STOPED;
-                plc_app->stop();
+                plc_curr_app->stop();
             }
             break;
             }
@@ -209,7 +209,7 @@ void dbg_handler(void)
         case DBG_CMD_GET_V:
         {
             plc_dbg_ctrl.state = GET_DEBUG_DATA;
-            plc_dbg_ctrl.data_hook = plc_app->dbg_data_free; //Free buffer when transfer ends.
+            plc_dbg_ctrl.data_hook = plc_curr_app->dbg_data_free; //Free buffer when transfer ends.
         }
         break;
 
@@ -217,8 +217,8 @@ void dbg_handler(void)
         {
             plc_dbg_ctrl.state = GET_DATA_LEN;
 
-            plc_app->dbg_suspend(0);
-            plc_app->dbg_vars_reset();
+            plc_curr_app->dbg_suspend(0);
+            plc_curr_app->dbg_vars_reset();
             //Get 4 byte data length, little endian
             plc_dbg_ctrl.tmp_len = 4;
             plc_dbg_ctrl.tmp = (unsigned char *)&plc_dbg_ctrl.data_len;
@@ -233,7 +233,7 @@ void dbg_handler(void)
             plc_dbg_ctrl.tmp = (unsigned char *)&plc_dbg_ctrl.data_len;
             //Than Transfer 32 bytes of data
             plc_dbg_ctrl.data_len = 32;
-            plc_dbg_ctrl.data = (unsigned char *)plc_app->id;
+            plc_dbg_ctrl.data = (unsigned char *)plc_curr_app->id;
         }
         break;
 
@@ -242,7 +242,7 @@ void dbg_handler(void)
             unsigned char i;
             for(i = 0; i < 4; i++)
             {
-                plc_dbg_ctrl.tr_buf.log_cnt[i] = plc_app->log_cnt_get(i);
+                plc_dbg_ctrl.tr_buf.log_cnt[i] = plc_curr_app->log_cnt_get(i);
             }
             plc_dbg_ctrl.state = PUT_LC_LEN;
             //Transfer 4 byte data length, little endian
@@ -263,7 +263,7 @@ void dbg_handler(void)
         case DBG_CMD_CLR_LM:
         {
             plc_dbg_ctrl.state = GET_CMD;
-            plc_app->log_cnt_reset();
+            plc_curr_app->log_cnt_reset();
         }
         break;
 
@@ -282,7 +282,7 @@ void dbg_handler(void)
     {
         PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
 
-        if( 0 == plc_app->dbg_data_get( &plc_dbg_ctrl.tr.get_val.tick, (long unsigned int *)&plc_dbg_ctrl.data_len, (void **)&plc_dbg_ctrl.data ) )
+        if( 0 == plc_curr_app->dbg_data_get( &plc_dbg_ctrl.tr.get_val.tick, (long unsigned int *)&plc_dbg_ctrl.data_len, (void **)&plc_dbg_ctrl.data ) )
         {
             //Transfer data
             plc_dbg_ctrl.data_len += 4; //Must transfer tick
@@ -368,7 +368,7 @@ void dbg_handler(void)
             }
             else
             {
-                plc_app->dbg_resume();
+                plc_curr_app->dbg_resume();
                 plc_dbg_ctrl.state = GET_CMD;
             }
         }
@@ -405,12 +405,12 @@ void dbg_handler(void)
             if( 0 == plc_dbg_ctrl.tmp_len )
             {
                 //No force data
-                plc_app->dbg_var_register( plc_dbg_ctrl.tr.set_val.var_idx, (void *)0 );
+                plc_curr_app->dbg_var_register( plc_dbg_ctrl.tr.set_val.var_idx, (void *)0 );
 
                 if( plc_dbg_ctrl.data_len <= 0 )
                 {
                     //When all data transfered get next command
-                    plc_app->dbg_resume();
+                    plc_curr_app->dbg_resume();
                     plc_dbg_ctrl.state = GET_CMD;
                 }
                 else
@@ -445,11 +445,11 @@ void dbg_handler(void)
         {
             PLC_CLEAR_TIMER( plc_dbg_ctrl.timer );
 
-            plc_app->dbg_var_register( plc_dbg_ctrl.tr.set_val.var_idx, &plc_dbg_ctrl.tr_buf.data[0] );
+            plc_curr_app->dbg_var_register( plc_dbg_ctrl.tr.set_val.var_idx, &plc_dbg_ctrl.tr_buf.data[0] );
             if( plc_dbg_ctrl.data_len <= 0 )
             {
                 //When all data transfered get next command
-                plc_app->dbg_resume();
+                plc_curr_app->dbg_resume();
                 plc_dbg_ctrl.state = GET_CMD;
             }
             else
@@ -513,7 +513,7 @@ void dbg_handler(void)
 
             plc_dbg_ctrl.state = PUT_MSG_LEN;
 
-            plc_dbg_ctrl.data_len = plc_app->log_msg_get(
+            plc_dbg_ctrl.data_len = plc_curr_app->log_msg_get(
                                         plc_dbg_ctrl.tr.get_log_msg.level,
                                         plc_dbg_ctrl.tr.get_log_msg.msg_id,
                                         &plc_dbg_ctrl.tr_buf.log_msg[0],

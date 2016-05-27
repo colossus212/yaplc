@@ -9,7 +9,7 @@
 plc_iom_t plc_iom;
 
 #ifndef PLC_APP
-#   define PLC_APP plc_app
+#   define PLC_APP plc_curr_app
 #endif
 
 /*Insertion sort*/
@@ -186,8 +186,8 @@ void plc_iom_get(void)
 
     for (i = 0; i < m_end; i++)
     {
-        j = mid_from_pid( plc_app->l_tab[i]->proto );
-        plc_app->w_tab[i] += plc_iom_registry[j].get(i);
+        j = mid_from_pid( plc_curr_app->l_tab[i]->proto );
+        plc_curr_app->w_tab[i] += plc_iom_registry[j].get(i);
     }
 }
 
@@ -197,12 +197,12 @@ void plc_iom_set(void)
     uint8_t j;
 
     m_start = plc_iom.m_start;
-    o_end   = plc_app->l_sz;
+    o_end   = plc_curr_app->l_sz;
 
     for (i = m_start; i < o_end; i++)
     {
-        j = mid_from_pid( plc_app->l_tab[i]->proto );
-        plc_app->w_tab[i] += plc_iom_registry[j].set(i);
+        j = mid_from_pid( plc_curr_app->l_tab[i]->proto );
+        plc_curr_app->w_tab[i] += plc_iom_registry[j].set(i);
     }
 }
 
@@ -224,12 +224,12 @@ void plc_iom_poll(void)
         return;
     }
 
-    o_end = plc_app->l_sz;
+    o_end = plc_curr_app->l_sz;
 
     for (i = 0; i < o_end; i++)
     {
-        j = mid_from_pid( plc_app->l_tab[i]->proto );
-        plc_app->w_tab[i] += plc_iom_registry[j].sched(i, tick);
+        j = mid_from_pid( plc_curr_app->l_tab[i]->proto );
+        plc_curr_app->w_tab[i] += plc_iom_registry[j].sched(i, tick);
     }
 
     for (j = 0; j < plc_iom_reg_sz; j++)

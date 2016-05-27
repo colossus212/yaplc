@@ -113,7 +113,7 @@ void plc_heart_beat(void)
             if( hse_post_flag )
             {
                 hse_post_flag = false;
-                plc_app->log_msg_post(LOG_CRITICAL, (char *)plc_hse_err_msg, sizeof(plc_hse_err_msg));
+                plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_hse_err_msg, sizeof(plc_hse_err_msg));
             }
             gpio_set( PLC_LED2_PORT, PLC_LED2_PIN );
         }
@@ -123,7 +123,7 @@ void plc_heart_beat(void)
             if( lse_post_flag )
             {
                 lse_post_flag = false;
-                plc_app->log_msg_post(LOG_CRITICAL, (char *)plc_lse_err_msg, sizeof(plc_lse_err_msg));
+                plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_lse_err_msg, sizeof(plc_lse_err_msg));
             }
             gpio_set( PLC_LED3_PORT, PLC_LED3_PIN );
         }
@@ -279,6 +279,40 @@ void PLC_IOM_LOCAL_INIT(void)
     gpio_mode_setup(PLC_I8_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I8_PIN);
 }
 
+static char print_buf[128];
+static const char print_lt[] = {'I','M','Q'};
+static const char print_sz[] = {'X','B','W','D','L'};
+
+void plc_loc_check_print(uint16_t i)
+{
+    int cnt;
+    cnt = sprintf(
+                  print_buf,
+                  "Checking: %%%c%c%d",
+                  print_lt[PLC_APP->l_tab[i]->v_type],
+                  print_sz[PLC_APP->l_tab[i]->v_size],
+                  (int)PLC_APP->l_tab[i]->proto
+                  );
+    if( PLC_APP->l_tab[i]->a_size )
+    {
+        uint16_t j;
+        for (j = 0; j < PLC_APP->l_tab[i]->a_size; j++)
+        {
+            cnt += sprintf( print_buf + cnt, ".%d", (int)PLC_APP->l_tab[i]->a_data[j] );
+            //Overflow check
+            if( cnt >= 115 )
+            {
+                //Maximum print length is 12bytes
+                print_buf[115] = 0;
+                cnt = 114;
+                break;
+            }
+        }
+    }
+    //Must use default app here
+    plc_curr_app->log_msg_post(LOG_DEBUG, (char *)print_buf, cnt+1);
+}
+
 const char plc_iom_err_proto[] = "IO protocol is not supported!";
 const uint32_t plc_iom_err_psz = sizeof(plc_iom_err_proto);
 
@@ -291,16 +325,17 @@ const char plc_dio_err_olim[]  = "Digital input must have address 1...4!";
 bool PLC_IOM_LOCAL_CHECK(uint16_t i)
 {
     uint32_t addr;
+    plc_loc_check_print(i);
     //Check size
     if (PLC_LSZ_X != PLC_APP->l_tab[i]->v_size)
     {
-        PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
+        plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
         return false;
     }
 
     if (1 != PLC_APP->l_tab[i]->a_size)
     {
-        PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_asz, sizeof(plc_dio_err_asz));
+        plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_asz, sizeof(plc_dio_err_asz));
         return false;
     }
 
@@ -312,7 +347,7 @@ bool PLC_IOM_LOCAL_CHECK(uint16_t i)
     {
         if (addr < 1 || addr > 8)
         {
-            PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_ilim, sizeof(plc_dio_err_ilim));
+            plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_ilim, sizeof(plc_dio_err_ilim));
             return false;
         }
         else
@@ -322,14 +357,14 @@ bool PLC_IOM_LOCAL_CHECK(uint16_t i)
     }
     case PLC_LT_M:default:
     {
-        PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
+        plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
         return false;
     }
     case PLC_LT_Q:
     {
         if (addr < 1 || addr > 4)
         {
-            PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_olim, sizeof(plc_dio_err_olim));
+            plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_olim, sizeof(plc_dio_err_olim));
             return false;
         }
         else
@@ -360,17 +395,17 @@ uint32_t PLC_IOM_LOCAL_WEIGTH(uint16_t lid)
 }
 uint32_t PLC_IOM_LOCAL_GET(uint16_t i)
 {
-    if( PLC_LT_I == plc_app->l_tab[i]->v_type )
+    if( PLC_LT_I == plc_curr_app->l_tab[i]->v_type )
     {
-        *(bool *)(plc_app->l_tab[i]->v_buf) = plc_get_din( plc_app->l_tab[i]->a_data[0] );
+        *(bool *)(plc_curr_app->l_tab[i]->v_buf) = plc_get_din( plc_curr_app->l_tab[i]->a_data[0] );
     }
     return 0;
 }
 uint32_t PLC_IOM_LOCAL_SET(uint16_t i)
 {
-    if( PLC_LT_Q == plc_app->l_tab[i]->v_type )
+    if( PLC_LT_Q == plc_curr_app->l_tab[i]->v_type )
     {
-         plc_set_dout( plc_app->l_tab[i]->a_data[0], *(bool *)(plc_app->l_tab[i]->v_buf) );
+         plc_set_dout( plc_curr_app->l_tab[i]->a_data[0], *(bool *)(plc_curr_app->l_tab[i]->v_buf) );
     }
     return 0;
 }

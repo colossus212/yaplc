@@ -18,7 +18,7 @@
 #include <plc_app_default.h>
 
 unsigned char plc_state = PLC_STATE_STOPED;
-plc_app_abi_t * plc_app = (plc_app_abi_t *)&plc_app_default;
+plc_app_abi_t * plc_curr_app = (plc_app_abi_t *)&plc_app_default;
 
 extern bool plc_app_is_valid(void);
 extern void plc_app_cstratup(void);
@@ -71,7 +71,8 @@ int main(void)
             if(plc_iom_check_and_sort())
             {
                 //Everything is OK may use app code
-                plc_app = (plc_app_abi_t *)PLC_APP;
+                plc_curr_app = (plc_app_abi_t *)PLC_APP;
+                plc_curr_app->log_msg_post(LOG_DEBUG, (char *)plc_start_msg, sizeof(plc_start_msg));
             }
         }
     }
@@ -87,10 +88,8 @@ int main(void)
     {
         //May start the app immediately
         plc_state = PLC_STATE_STARTED;
-        plc_app->start(0,0);
+        plc_curr_app->start(0,0);
     }
-
-    plc_app->log_msg_post(LOG_DEBUG, (char *)plc_start_msg, sizeof(plc_start_msg));
 
     while(1)
     {
@@ -106,7 +105,7 @@ int main(void)
             if( PLC_STATE_STARTED == plc_state )
             {
                 plc_iom_get();
-                plc_app->run();
+                plc_curr_app->run();
                 plc_iom_set();
             }
         }

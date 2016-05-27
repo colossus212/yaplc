@@ -13,10 +13,10 @@
 #define PLC_LOC_TYPE(a) PLC_LOC_CONCAT(PLC_LT_,a)
 
 #define PLC_LSZ_X 0
-#define PLC_LSZ_B sizeof(uint8_t)
-#define PLC_LSZ_W sizeof(uint16_t)
-#define PLC_LSZ_D sizeof(uint32_t)
-#define PLC_LSZ_L sizeof(uint64_t)
+#define PLC_LSZ_B 1
+#define PLC_LSZ_W 2
+#define PLC_LSZ_D 3
+#define PLC_LSZ_L 4
 
 #define PLC_LOC_SIZE(a) PLC_LOC_CONCAT(PLC_LSZ_,a)
 
@@ -107,6 +107,6 @@ typedef struct
 }
 plc_rte_abi_t;
 
-extern plc_app_abi_t * plc_app;
+extern plc_app_abi_t * plc_curr_app;
 
 #endif // _PLC_ABI_H_

@@ -38,10 +38,6 @@ static uint8_t out_cnt = 0;
 static void out_stub(unsigned char c)
 {
     out_ptr[out_cnt++] = c;
-    if( 127 < out_cnt )
-    {
-        out_cnt = 127;
-    }
 }
 
 

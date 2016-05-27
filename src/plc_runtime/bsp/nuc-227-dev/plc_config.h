@@ -155,6 +155,6 @@ extern void plc_heart_beat(void);
 */
 extern const const char plc_iom_err_proto[];
 extern const uint32_t plc_iom_err_psz;
-#define PLC_IOM_ASSERT(...) plc_app->log_msg_post(LOG_CRITICAL, (char *)plc_iom_err_proto, plc_iom_err_psz)
+#define PLC_IOM_ASSERT(...) plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_iom_err_proto, plc_iom_err_psz)
 
 #endif /* _PLC_CONFIG_H_ */
