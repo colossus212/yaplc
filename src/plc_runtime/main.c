@@ -3,9 +3,12 @@
 
 #include <iec_std_lib.h>
 
+#include <plc_config.h>
+
 #include <plc_abi.h>
 #include <plc_dbg.h>
 
+#include <plc_iom.h>
 #include <plc_hw.h>
 #include <plc_clock.h>
 #include <plc_wait_tmr.h>
@@ -13,12 +16,6 @@
 #include <plc_rtc.h>
 #include <plc_tick.h>
 #include <plc_app_default.h>
-
-#include <plc_config.h>
-
-#ifndef PLC_BLINK
-#   define PLC_BLINK() do{}while(0)
-#endif
 
 unsigned char plc_state = PLC_STATE_STOPED;
 plc_app_abi_t * plc_app = (plc_app_abi_t *)&plc_app_default;
@@ -45,7 +42,9 @@ int main(void)
     plc_app_default_init();
     plc_clock_setup();
     plc_wait_tmr_init();
+    plc_boot_init();
     plc_hw_init();
+    plc_iom_init();
 
     if( !plc_check_hw() )
     {
@@ -66,9 +65,14 @@ int main(void)
 
         if( plc_app_is_valid() )
         {
-            //App code is OK, start the app...
-            plc_app = (plc_app_abi_t *)PLC_APP;
+            //App code is OK, do cstartup
             plc_app_cstratup();
+            //Check plc io locations
+            if(plc_iom_check_and_sort())
+            {
+                //Everything is OK may use app code
+                plc_app = (plc_app_abi_t *)PLC_APP;
+            }
         }
     }
     dbg_init();
@@ -86,7 +90,7 @@ int main(void)
         plc_app->start(0,0);
     }
 
-    plc_app->log_msg_post(LOG_INFO, (char *)plc_start_msg, sizeof(plc_start_msg));
+    plc_app->log_msg_post(LOG_DEBUG, (char *)plc_start_msg, sizeof(plc_start_msg));
 
     while(1)
     {
@@ -94,13 +98,16 @@ int main(void)
         dbg_handler();
         //Heart bit
         plc_heart_beat();
+        plc_iom_poll();
         //App run
         if( plc_tick_flag )
         {
             plc_tick_flag = false;
             if( PLC_STATE_STARTED == plc_state )
             {
+                plc_iom_get();
                 plc_app->run();
+                plc_iom_set();
             }
         }
     }

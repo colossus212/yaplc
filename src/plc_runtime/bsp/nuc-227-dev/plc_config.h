@@ -137,7 +137,7 @@ extern void plc_heart_beat(void);
 /*
 *  PLC RTE Version
 */
-#define PLC_RTE_VER_MAJOR 1
+#define PLC_RTE_VER_MAJOR 2
 #define PLC_RTE_VER_MINOR 0
 #define PLC_RTE_VER_PATCH 0
 
@@ -149,5 +149,12 @@ extern void plc_heart_beat(void);
 #define LOG_WARNING 1
 #define LOG_INFO 2
 #define LOG_DEBUG 3
+
+/**
+* TODO: Add simple printf for error logging!!!
+*/
+extern const const char plc_iom_err_proto[];
+extern const uint32_t plc_iom_err_psz;
+#define PLC_IOM_ASSERT(...) plc_app->log_msg_post(LOG_CRITICAL, (char *)plc_iom_err_proto, plc_iom_err_psz)
 
 #endif /* _PLC_CONFIG_H_ */

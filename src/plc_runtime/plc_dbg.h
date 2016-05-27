@@ -133,14 +133,11 @@ typedef struct
     tr_buf_t tr_buf;
 }plc_dbg_proto_t;
 
-
-
 #define PLC_STATE_STOPED 0x55
 #define PLC_STATE_STARTED 0xAA
 
-extern void enter_boot_mode(void);
+extern void plc_boot_mode_enter(void);
 extern uint8_t plc_state;
-extern plc_app_abi_t * plc_app;
 
 extern void dbg_init(void);
 extern void dbg_handler(void);

@@ -24,7 +24,7 @@ void PLC_IOM_LOCAL_POLL(uint32_t tick)
 }
 uint32_t PLC_IOM_LOCAL_WEIGTH(uint16_t lid)
 {
-    return app->l_tab[lid]->a_data[0];
+    return plc_app->l_tab[lid]->a_data[0];
 }
 uint32_t PLC_IOM_LOCAL_GET(uint16_t lid)
 {

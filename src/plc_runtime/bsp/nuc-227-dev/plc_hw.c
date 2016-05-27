@@ -8,11 +8,11 @@
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/scb.h>
 
+#include <plc_config.h>
 #include <plc_abi.h>
-
 #include <plc_wait_tmr.h>
 #include <plc_hw.h>
-#include <plc_config.h>
+#include <plc_iom.h>
 
 uint32_t plc_hw_status = 0;
 
@@ -41,17 +41,31 @@ void plc_error_hse(void)
     return;  ///Must return!!!
 }
 
-//Led blink timer
-static uint32_t blink_tmr;
-
-void plc_hw_init(void)
+void plc_boot_init(void)
 {
     //Boot pin config
     rcc_periph_clock_enable( PLC_BOOT_PERIPH );
     gpio_mode_setup(PLC_BOOT_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_BOOT_PIN);
     gpio_set_output_options(PLC_BOOT_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_BOOT_PIN);
     gpio_set( PLC_BOOT_PORT, PLC_BOOT_PIN ); //Exit boot mode
+}
 
+void plc_boot_mode_enter(void)
+{
+    uint32_t delay;
+    gpio_clear( PLC_BOOT_PORT, PLC_BOOT_PIN );
+
+    PLC_CLEAR_TIMER( delay );
+    while( PLC_TIMER(delay) < 2000 );
+
+    scb_reset_system();
+}
+
+
+//Led blink timer
+static uint32_t blink_tmr;
+void plc_hw_init(void)
+{
     ///LEDs
     PLC_CLEAR_TIMER( blink_tmr );
     //LED1
@@ -69,78 +83,9 @@ void plc_hw_init(void)
     gpio_mode_setup(PLC_LED3_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_LED3_PIN);
     gpio_set_output_options(PLC_LED3_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_LED3_PIN);
     gpio_clear( PLC_LED3_PORT, PLC_LED3_PIN );
-    ///Outputs
-    //DO1
-    rcc_periph_clock_enable( PLC_O1_PERIPH );
-    gpio_mode_setup(PLC_O1_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_O1_PIN);
-    gpio_set_output_options(PLC_O1_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_O1_PIN);
-    gpio_clear( PLC_O1_PORT, PLC_O1_PIN );
-    //DO2
-    rcc_periph_clock_enable( PLC_O2_PERIPH );
-    gpio_mode_setup(PLC_O2_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_O2_PIN);
-    gpio_set_output_options(PLC_O2_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_O2_PIN);
-    gpio_clear( PLC_O2_PORT, PLC_O2_PIN );
-    //DO3
-    rcc_periph_clock_enable( PLC_O3_PERIPH );
-    gpio_mode_setup(PLC_O3_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_O3_PIN);
-    gpio_set_output_options(PLC_O3_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_O3_PIN);
-    gpio_clear( PLC_O3_PORT, PLC_O3_PIN );
-    //DO4
-    rcc_periph_clock_enable( PLC_O4_PERIPH );
-    gpio_mode_setup(PLC_O4_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_O4_PIN);
-    gpio_set_output_options(PLC_O4_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_O4_PIN);
-    gpio_clear( PLC_O4_PORT, PLC_O4_PIN );
-    ///Inputs
-    //DI1
-    rcc_periph_clock_enable(PLC_I1_PERIPH);
-    gpio_mode_setup(PLC_I1_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I1_PIN);
-    //DI2
-    rcc_periph_clock_enable(PLC_I2_PERIPH);
-    gpio_mode_setup(PLC_I2_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I2_PIN);
-    //DI3
-    rcc_periph_clock_enable(PLC_I3_PERIPH);
-    gpio_mode_setup(PLC_I3_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I3_PIN);
-    //DI4
-    rcc_periph_clock_enable(PLC_I4_PERIPH);
-    gpio_mode_setup(PLC_I4_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I4_PIN);
-    //DI5
-    rcc_periph_clock_enable(PLC_I5_PERIPH);
-    gpio_mode_setup(PLC_I5_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I5_PIN);
-    //DI6
-    rcc_periph_clock_enable(PLC_I6_PERIPH);
-    gpio_mode_setup(PLC_I6_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I6_PIN);
-    //DI7
-    rcc_periph_clock_enable(PLC_I7_PERIPH);
-    gpio_mode_setup(PLC_I7_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I7_PIN);
-    //DI8
-    rcc_periph_clock_enable(PLC_I8_PERIPH);
-    gpio_mode_setup(PLC_I8_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I8_PIN);
-
-	//Enable power interface
-	rcc_periph_clock_enable( RCC_PWR );
-}
-
-void enter_boot_mode(void)
-{
-    uint32_t delay;
-    gpio_clear( PLC_BOOT_PORT, PLC_BOOT_PIN );
-
-    PLC_CLEAR_TIMER( delay );
-    while( PLC_TIMER(delay) < 2000 );
-
-    scb_reset_system();
-}
-
-void plc_start_delay(void)
-{
-    uint32_t delay;
-    PLC_CLEAR_TIMER( delay );
-    while( PLC_TIMER(delay) < 100 );
 }
 
 extern uint32_t plc_backup_satus;
-
-extern plc_app_abi_t * plc_app;
 
 static bool hse_post_flag = true;
 const char plc_hse_err_msg[] = "HSE oscilator failed!";
@@ -281,4 +226,170 @@ void plc_set_aout( uint32_t i, uint32_t val )
 {
     (void)i;
     (void)val;
+}
+//Digital io
+#define LOCAL_PROTO dio
+void PLC_IOM_LOCAL_INIT(void)
+{
+    ///Outputs
+    //DO1
+    rcc_periph_clock_enable( PLC_O1_PERIPH );
+    gpio_mode_setup(PLC_O1_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_O1_PIN);
+    gpio_set_output_options(PLC_O1_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_O1_PIN);
+    gpio_clear( PLC_O1_PORT, PLC_O1_PIN );
+    //DO2
+    rcc_periph_clock_enable( PLC_O2_PERIPH );
+    gpio_mode_setup(PLC_O2_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_O2_PIN);
+    gpio_set_output_options(PLC_O2_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_O2_PIN);
+    gpio_clear( PLC_O2_PORT, PLC_O2_PIN );
+    //DO3
+    rcc_periph_clock_enable( PLC_O3_PERIPH );
+    gpio_mode_setup(PLC_O3_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_O3_PIN);
+    gpio_set_output_options(PLC_O3_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_O3_PIN);
+    gpio_clear( PLC_O3_PORT, PLC_O3_PIN );
+    //DO4
+    rcc_periph_clock_enable( PLC_O4_PERIPH );
+    gpio_mode_setup(PLC_O4_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, PLC_O4_PIN);
+    gpio_set_output_options(PLC_O4_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, PLC_O4_PIN);
+    gpio_clear( PLC_O4_PORT, PLC_O4_PIN );
+    ///Inputs
+    //DI1
+    rcc_periph_clock_enable(PLC_I1_PERIPH);
+    gpio_mode_setup(PLC_I1_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I1_PIN);
+    //DI2
+    rcc_periph_clock_enable(PLC_I2_PERIPH);
+    gpio_mode_setup(PLC_I2_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I2_PIN);
+    //DI3
+    rcc_periph_clock_enable(PLC_I3_PERIPH);
+    gpio_mode_setup(PLC_I3_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I3_PIN);
+    //DI4
+    rcc_periph_clock_enable(PLC_I4_PERIPH);
+    gpio_mode_setup(PLC_I4_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I4_PIN);
+    //DI5
+    rcc_periph_clock_enable(PLC_I5_PERIPH);
+    gpio_mode_setup(PLC_I5_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I5_PIN);
+    //DI6
+    rcc_periph_clock_enable(PLC_I6_PERIPH);
+    gpio_mode_setup(PLC_I6_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I6_PIN);
+    //DI7
+    rcc_periph_clock_enable(PLC_I7_PERIPH);
+    gpio_mode_setup(PLC_I7_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I7_PIN);
+    //DI8
+    rcc_periph_clock_enable(PLC_I8_PERIPH);
+    gpio_mode_setup(PLC_I8_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I8_PIN);
+}
+
+const char plc_iom_err_proto[] = "IO protocol is not supported!";
+const uint32_t plc_iom_err_psz = sizeof(plc_iom_err_proto);
+
+const char plc_dio_err_sz[]    = "All digital io mus be BOOL!";
+const char plc_dio_err_asz[]   = "Digital io address must be one number!";
+const char plc_dio_err_tp[]    = "Digital io does not support memory locations!";
+const char plc_dio_err_ilim[]  = "Digital input must have address 1...8!";
+const char plc_dio_err_olim[]  = "Digital input must have address 1...4!";
+
+bool PLC_IOM_LOCAL_CHECK(uint16_t i)
+{
+    uint32_t addr;
+    //Check size
+    if (PLC_LSZ_X != PLC_APP->l_tab[i]->v_size)
+    {
+        PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
+        return false;
+    }
+
+    if (1 != PLC_APP->l_tab[i]->a_size)
+    {
+        PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_asz, sizeof(plc_dio_err_asz));
+        return false;
+    }
+
+    addr = PLC_APP->l_tab[i]->a_data[0];
+    //Check type and address
+    switch (PLC_APP->l_tab[i]->v_type)
+    {
+    case PLC_LT_I:
+    {
+        if (addr < 1 || addr > 8)
+        {
+            PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_ilim, sizeof(plc_dio_err_ilim));
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    case PLC_LT_M:default:
+    {
+        PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
+        return false;
+    }
+    case PLC_LT_Q:
+    {
+        if (addr < 1 || addr > 4)
+        {
+            PLC_APP->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_olim, sizeof(plc_dio_err_olim));
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    }
+    return true;
+}
+
+void PLC_IOM_LOCAL_START(uint16_t lid)
+{
+}
+void PLC_IOM_LOCAL_END(uint16_t lid)
+{
+}
+uint32_t PLC_IOM_LOCAL_SCHED(uint16_t lid, uint32_t tick)
+{
+    return 0;
+}
+void PLC_IOM_LOCAL_POLL(uint32_t tick)
+{
+}
+uint32_t PLC_IOM_LOCAL_WEIGTH(uint16_t lid)
+{
+    return PLC_APP->l_tab[lid]->a_data[0];
+}
+uint32_t PLC_IOM_LOCAL_GET(uint16_t i)
+{
+    if( PLC_LT_I == plc_app->l_tab[i]->v_type )
+    {
+        *(bool *)(plc_app->l_tab[i]->v_buf) = plc_get_din( plc_app->l_tab[i]->a_data[0] );
+    }
+    return 0;
+}
+uint32_t PLC_IOM_LOCAL_SET(uint16_t i)
+{
+    if( PLC_LT_Q == plc_app->l_tab[i]->v_type )
+    {
+         plc_set_dout( plc_app->l_tab[i]->a_data[0], *(bool *)(plc_app->l_tab[i]->v_buf) );
+    }
+    return 0;
+}
+#undef LOCAL_PROTO
+const plc_io_metods_t plc_iom_registry[] =
+{
+    PLC_IOM_RECORD(dio),
+};
+//Must be declared after plc_iom_registry
+PLC_IOM_REG_SZ_DECL;
+
+uint8_t mid_from_pid( uint16_t proto )
+{
+    switch(proto)
+    {
+    case 0:
+        return 0;
+    default:
+        return PLC_IOM_MID_ERROR;
+    }
+    return PLC_IOM_MID_ERROR;
 }

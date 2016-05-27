@@ -26,6 +26,7 @@ bool plc_rst_jmpr_get(void);
 
 void plc_heart_beat(void);
 
-void enter_boot_mode(void);
+void plc_boot_init(void);
+void plc_boot_mode_enter(void);
 
 #endif /* _PLC_HW_H_ */

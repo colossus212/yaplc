@@ -4,6 +4,36 @@
 #include <stdbool.h>
 #include <iec_types_all.h>
 
+#define PLC_LOC_CONCAT(a,b) a##b
+
+#define PLC_LT_I 0
+#define PLC_LT_M 1
+#define PLC_LT_Q 2
+
+#define PLC_LOC_TYPE(a) PLC_LOC_CONCAT(PLC_LT_,a)
+
+#define PLC_LSZ_X 0
+#define PLC_LSZ_B sizeof(uint8_t)
+#define PLC_LSZ_W sizeof(uint16_t)
+#define PLC_LSZ_D sizeof(uint32_t)
+#define PLC_LSZ_L sizeof(uint64_t)
+
+#define PLC_LOC_SIZE(a) PLC_LOC_CONCAT(PLC_LSZ_,a)
+
+typedef struct _plc_loc_dsc_t plc_loc_dsc_t;
+
+struct _plc_loc_dsc_t
+{
+    void           *v_buf;
+    uint8_t         v_type;
+    uint8_t         v_size;
+    uint16_t        a_size;
+    const uint32_t *a_data;
+    uint16_t        proto;
+};
+
+typedef const plc_loc_dsc_t * plc_loc_tbl_t;
+
 typedef void (*app_fp_t) (void);
 
 typedef struct
@@ -26,6 +56,10 @@ typedef struct
     uint32_t rte_ver_major;
     uint32_t rte_ver_minor;
     uint32_t rte_ver_patch;
+    //IO manager data
+    plc_loc_tbl_t * l_tab; //Location table
+    uint32_t      * w_tab; //Weigth table
+    uint16_t        l_sz;  //Location table size
     //Control instance of PLC_ID
     const char    * check_id; //Must be placed to the end of .text
     //App interface
@@ -72,5 +106,7 @@ typedef struct
     void (*get_mem)( uint32_t, uint32_t, uint8_t * ); // mem addr, size, buff addr
 }
 plc_rte_abi_t;
+
+extern plc_app_abi_t * plc_app;
 
 #endif // _PLC_ABI_H_

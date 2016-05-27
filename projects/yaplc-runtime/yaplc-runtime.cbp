@@ -12,7 +12,6 @@
 				<Option type="1" />
 				<Option compiler="armnoneeabigcc" />
 				<Compiler>
-					<Add option="-Os" />
 					<Add option="-g" />
 				</Compiler>
 			</Target>
@@ -107,16 +106,27 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/plc_runtime/plc_hw.h" />
+		<Unit filename="../../src/plc_runtime/plc_iom.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/plc_iom.h" />
+		<Unit filename="../../src/plc_runtime/plc_libc.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../src/plc_runtime/plc_rtc.h" />
 		<Unit filename="../../src/plc_runtime/plc_tick.h" />
 		<Unit filename="../../src/plc_runtime/plc_wait_tmr.h" />
+		<Unit filename="../../src/plc_runtime/xprintf.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/xprintf.h" />
 		<Extensions>
 			<envvars />
 			<code_completion />
 			<debugger>
 				<search_path add="bin/Debug" />
 				<remote_debugging>
-					<options conn_type="0" serial_baud="115200" ip_address="127.0.0.1" ip_port="4242" additional_cmds="load&#x0A;tb main&#x0A;monitor jtag_reset" additional_cmds_before="shell st-util &amp; disown&#x0A;set remotetimeout 60000" />
+					<options conn_type="0" serial_baud="115200" ip_address="127.0.0.1" ip_port="4242" additional_cmds="load&#x0A;tb main&#x0A;monitor jtag_reset" additional_cmds_before="shell xterm -e st-util &amp; disown&#x0A;set remotetimeout 60000" />
 				</remote_debugging>
 			</debugger>
 			<lib_finder disable_auto="1" />

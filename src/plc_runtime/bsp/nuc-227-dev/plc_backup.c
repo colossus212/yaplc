@@ -29,7 +29,7 @@ static uint32_t * plc_backup_reg = PLC_BKP_START;
 void plc_backup_init(void)
 {
     uint32_t i;
-    //rcc_periph_clock_enable( RCC_PWR );
+    rcc_periph_clock_enable( RCC_PWR );
     pwr_disable_backup_domain_write_protect();
 
     PWR_CSR |= PWR_CSR_BRE;             // Backup regulator enable

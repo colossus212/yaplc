@@ -202,7 +202,7 @@ void dbg_handler(void)
         case DBG_CMD_RESET:
         {
             plc_backup_invalidate();
-            enter_boot_mode();
+            plc_boot_mode_enter();
         }
         break;
 

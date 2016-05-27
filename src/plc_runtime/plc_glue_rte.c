@@ -8,37 +8,7 @@
 #include <plc_tick.h>
 #include <plc_backup.h>
 #include <plc_hw.h>
-
-
-/* Portions of standart library to run Linker with -nostdlib -lgcc */
-void *memset(void *dest, int c, size_t count)
-{
-    char * d;
-
-    c &= 0xff;
-    d = (char *)dest;
-
-    while(count--)
-    {
-        *d++ = (char)c;
-    }
-    return (void *)d;
-}
-
-void *memcpy(void *dest, const void *src, size_t count)
-{
-    char *d, *s;
-
-    d = (char *)dest;
-    s = (char *)src;
-
-    while(count--)
-    {
-        *d++ = *s++;
-    }
-    return (void *)d;
-}
-/* Portions of standart library*/
+#include <plc_iom.h>
 
 __attribute__ ((section(".plc_rte_sec"))) plc_rte_abi_t plc_glue_rte =
 {
@@ -66,11 +36,11 @@ extern uint32_t _app_end;
 
 static bool plc_check_code( uint32_t * addr )
 {
-    if( addr < &_app_start )
+    if (addr < &_app_start)
     {
         return false;
     }
-    if( addr > &_app_end )
+    if (addr > &_app_end)
     {
         return false;
     }
@@ -79,7 +49,7 @@ static bool plc_check_code( uint32_t * addr )
 
 #define PLC_CHECK_CODE(addr) \
     do{ \
-        if( !plc_check_code( (uint32_t *)addr ) ) \
+        if (!plc_check_code( (uint32_t *)addr )) \
         { \
             return false; \
         } \
@@ -92,21 +62,21 @@ bool plc_app_is_valid(void)
 
     //Check stack
     ///TODO: Add stack section to app!
-    if( PLC_APP->sstart != &_stack )
+    if (PLC_APP->sstart != &_stack)
     {
         return false;
     }
     //Check that header was written
-    if( PLC_APP->log_cnt_reset == (void (*)(void))0xffffffff )
+    if (PLC_APP->log_cnt_reset == (void (*)(void))0xffffffff)
     {
         return false;
     }
     //Check that app was written
-    for(i=0; i<32; i++)
+    for (i=0; i<32; i++)
     {
         uint8_t tmp;
         tmp = PLC_APP->check_id[i];
-        if( PLC_APP->id[i] != tmp )
+        if (PLC_APP->id[i] != tmp)
         {
             return false;
         }
@@ -118,46 +88,46 @@ bool plc_app_is_valid(void)
     }
 
     //Check bss section
-    if( PLC_APP->bss_end >= &_stack )
+    if (PLC_APP->bss_end >= &_stack)
     {
         return false;
     }
     //Check data section
-    if( PLC_APP->data_end > PLC_APP->bss_end )
+    if (PLC_APP->data_end > PLC_APP->bss_end)
     {
         return false;
     }
-    if( PLC_APP->data_start > PLC_APP->data_end )
+    if (PLC_APP->data_start > PLC_APP->data_end)
     {
         return false;
     }
     //Check pa section
     PLC_CHECK_CODE( PLC_APP->pa_start );
     PLC_CHECK_CODE( PLC_APP->pa_end );
-    if( PLC_APP->pa_end < PLC_APP->pa_start )
+    if (PLC_APP->pa_end < PLC_APP->pa_start)
     {
         return false;
     }
     //Check ia section
     PLC_CHECK_CODE( PLC_APP->ia_start );
     PLC_CHECK_CODE( PLC_APP->ia_end );
-    if( PLC_APP->ia_end < PLC_APP->ia_start )
+    if (PLC_APP->ia_end < PLC_APP->ia_start)
     {
         return false;
     }
     //Check fia section
     PLC_CHECK_CODE( PLC_APP->fia_start );
     PLC_CHECK_CODE( PLC_APP->fia_end );
-    if( PLC_APP->fia_end < PLC_APP->fia_start )
+    if (PLC_APP->fia_end < PLC_APP->fia_start)
     {
         return false;
     }
     //Check RTE version compatibility
-    if( PLC_APP->rte_ver_major != PLC_RTE_VER_MAJOR )
+    if (PLC_APP->rte_ver_major != PLC_RTE_VER_MAJOR)
     {
         return false;
     }
-    if( PLC_APP->rte_ver_minor > PLC_RTE_VER_MINOR )
+    if (PLC_APP->rte_ver_minor > PLC_RTE_VER_MINOR)
     {
         return false;
     }
@@ -182,6 +152,24 @@ bool plc_app_is_valid(void)
     PLC_CHECK_CODE( PLC_APP->log_cnt_get );
     PLC_CHECK_CODE( PLC_APP->log_msg_get );
     PLC_CHECK_CODE( PLC_APP->log_cnt_reset );
+    //Check plc IO manager interface
+    if (PLC_APP->l_tab < (plc_loc_tbl_t *)PLC_APP->data_start)
+    {
+        return false;
+    }
+    if (PLC_APP->l_tab > (plc_loc_tbl_t *)PLC_APP->bss_end)
+    {
+        return false;
+    }
+
+    if (PLC_APP->w_tab < PLC_APP->data_start)
+    {
+        return false;
+    }
+    if (PLC_APP->w_tab > PLC_APP->bss_end)
+    {
+        return false;
+    }
     ///TODO: Add with CRC check
     return is_correct;
 }
@@ -194,13 +182,13 @@ void plc_app_cstratup(void)
 	dst = PLC_APP->data_start;
 	end = PLC_APP->data_end;
 	src = PLC_APP->data_loadaddr;
-	while( dst < end )
+	while (dst < end)
 	{
 	    *dst++ = *src++;
 	}
 	//Init .bss
 	end = PLC_APP->bss_end;
-	while( dst < end )
+	while (dst < end)
 	{
 	    *dst++ = 0;
 	}
@@ -208,7 +196,7 @@ void plc_app_cstratup(void)
 	// .preinit_array
 	func = PLC_APP->pa_start;
 	func_end = PLC_APP->pa_end;
-	while( func < func_end )
+	while (func < func_end)
 	{
 	    (*func)();
 	    func++;
@@ -216,7 +204,7 @@ void plc_app_cstratup(void)
 	// .init_array
 	func = PLC_APP->ia_start;
 	func_end = PLC_APP->ia_end;
-	while( func < func_end )
+	while (func < func_end)
 	{
 	    (*func)();
 	    func++;

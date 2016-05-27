@@ -5,8 +5,10 @@
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/scb.h>
 
-#include <plc_wait_tmr.h>
+
 #include <plc_config.h>
+#include <plc_wait_tmr.h>
+#include <plc_iom.h>
 
 void plc_wait_tmr_init(void)
 {
@@ -35,5 +37,6 @@ void PLC_WAIT_TMR_ISR(void)
 		/* Clear compare interrupt flag. */
 		timer_clear_flag(PLC_WAIT_TMR, TIM_SR_UIF);
         plc_sys_timer++;
+        plc_iom_tick();
     }
 }
