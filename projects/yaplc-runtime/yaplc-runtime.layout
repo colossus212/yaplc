@@ -19,13 +19,13 @@
 	<File name="../../src/plc_runtime/bsp/nuc-227-dev/plc_serial.c" open="0" top="0" tabpos="0">
 		<Cursor position="3182" topLine="73" />
 	</File>
-	<File name="../../src/plc_runtime/bsp/nuc-227-dev/plc_tick.c" open="0" top="0" tabpos="4">
-		<Cursor position="1814" topLine="39" />
+	<File name="../../src/plc_runtime/bsp/nuc-227-dev/plc_tick.c" open="1" top="1" tabpos="5">
+		<Cursor position="539" topLine="9" />
 	</File>
 	<File name="../../src/plc_runtime/bsp/nuc-227-dev/plc_wait_tmr.c" open="0" top="0" tabpos="0">
 		<Cursor position="1109" topLine="15" />
 	</File>
-	<File name="../../src/plc_runtime/main.c" open="1" top="1" tabpos="3">
+	<File name="../../src/plc_runtime/main.c" open="1" top="0" tabpos="3">
 		<Cursor position="2639" topLine="86" />
 	</File>
 	<File name="../../src/plc_runtime/plc_abi.h" open="0" top="0" tabpos="2">

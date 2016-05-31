@@ -19,17 +19,17 @@ static bool systick_set_period(uint32_t period, uint32_t ahb, uint8_t clk_source
     }
 }
 
-//Минимальный период в нС.
+//РњРёРЅРёРјР°Р»СЊРЅС‹Р№ РїРµСЂРёРѕРґ РІ РЅРЎ.
 #define TICK_MIN_PER    100000ULL
-//Пороговый период
+//РџРѕСЂРѕРіРѕРІС‹Р№ РїРµСЂРёРѕРґ
 #define TICK_THR_PER 500000000ULL
-//Частота в МГц
+//Р§Р°СЃС‚РѕС‚Р° РІ РњР“С†
 #define RCC_AHB_FREQ    168UL
 
-//Контроллер системного таймера.
+//РљРѕРЅС‚СЂРѕР»Р»РµСЂ СЃРёСЃС‚РµРјРЅРѕРіРѕ С‚Р°Р№РјРµСЂР°.
 static frac_div_t systick_ctrl;
 
-//Состояние системного таймера
+//РЎРѕСЃС‚РѕСЏРЅРёРµ СЃРёСЃС‚РµРјРЅРѕРіРѕ С‚Р°Р№РјРµСЂР°
 #define TICK_STATE_HIGH 0
 #define TICK_STATE_MID  1
 #define TICK_STATE_LOW  2
@@ -69,26 +69,26 @@ void plc_tick_setup( uint64_t tick_next, uint64_t tick_period )
 
     if( tick_period < TICK_THR_PER )
     {
-        //Переменная частота работы системного таймера.
+        //РџРµСЂРµРјРµРЅРЅР°СЏ С‡Р°СЃС‚РѕС‚Р° СЂР°Р±РѕС‚С‹ СЃРёСЃС‚РµРјРЅРѕРіРѕ С‚Р°Р№РјРµСЂР°.
         if( systick_set_period( (uint32_t)(tick_period/1000ULL), RCC_AHB_FREQ, STK_CSR_CLKSOURCE_AHB) )
         {
-            //Примерно до 0.1с
+            //РџСЂРёРјРµСЂРЅРѕ РґРѕ 0.1СЃ
             tick_state = TICK_STATE_HIGH;
-            frac_div_init( &systick_ctrl, tick_period, 1000ULL ); //Коррекция приода
+            frac_div_init( &systick_ctrl, tick_period, 1000ULL ); //РљРѕСЂСЂРµРєС†РёСЏ РїСЂРёРѕРґР°
         }
         else
         {
-            //До 0.5с
+            //Р”Рѕ 0.5СЃ
             tick_state = TICK_STATE_MID;
             systick_set_period( (uint32_t)(tick_period/8000ULL), RCC_AHB_FREQ, STK_CSR_CLKSOURCE_AHB_DIV8);
-            frac_div_init( &systick_ctrl, tick_period, 8000ULL ); //Коррекция периода
+            frac_div_init( &systick_ctrl, tick_period, 8000ULL ); //РљРѕСЂСЂРµРєС†РёСЏ РїРµСЂРёРѕРґР°
         }
     }
     else
     {
-        //Постоянная частота работы системного таймера.
+        //РџРѕСЃС‚РѕСЏРЅРЅР°СЏ С‡Р°СЃС‚РѕС‚Р° СЂР°Р±РѕС‚С‹ СЃРёСЃС‚РµРјРЅРѕРіРѕ С‚Р°Р№РјРµСЂР°.
         tick_state = TICK_STATE_LOW;
-        systick_set_period( 500, RCC_AHB_FREQ, STK_CSR_CLKSOURCE_AHB);//500мкс
+        systick_set_period( 500, RCC_AHB_FREQ, STK_CSR_CLKSOURCE_AHB);//500РјРєСЃ
         frac_div_init( &systick_ctrl, tick_period, 500000ULL );
     }
 
