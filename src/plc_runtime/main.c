@@ -17,6 +17,8 @@
 #include <plc_tick.h>
 #include <plc_app_default.h>
 
+uint32_t plc_hw_status = 0;
+
 unsigned char plc_state = PLC_STATE_STOPED;
 plc_app_abi_t * plc_curr_app = (plc_app_abi_t *)&plc_app_default;
 
@@ -42,11 +44,12 @@ int main(void)
     plc_app_default_init();
     plc_clock_setup();
     plc_wait_tmr_init();
+    plc_jmpr_init();
     plc_boot_init();
-    plc_hw_init();
+    plc_heart_beat_init();
     plc_iom_init();
 
-    if( !plc_check_hw() )
+    if( plc_iom_test_hw() )
     {
         // H/W is OK, continue init...
         plc_backup_init();
@@ -96,7 +99,7 @@ int main(void)
         //Hadnle debug connection
         dbg_handler();
         //Heart bit
-        plc_heart_beat();
+        plc_heart_beat_poll();
         plc_iom_poll();
         //App run
         if( plc_tick_flag )

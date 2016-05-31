@@ -4,15 +4,16 @@
 typedef struct _plc_io_metods_t plc_io_metods_t;
 struct _plc_io_metods_t
 {
-    void     (*init)  (void);                /* void     init  ( void);                                */
-    bool     (*check) (uint16_t);            /* bool     check ( uint16_t lid );                       */
-    void     (*start) (uint16_t);            /* void     start ( uint16_t lid );                       */
-    void     (*end)   (uint16_t);            /* void     end   ( uint16_t lid );                       */
-    uint32_t (*sched) (uint16_t, uint32_t);  /* uint32_t sched ( uint16_t lid, uint32_t tick );        */
-    void     (*poll)  (uint32_t);            /* void     poll  ( uint32_t tick );                      */
-    uint32_t (*weigth)(uint16_t);            /* uint32_t weigth( uint16_t lid );                       */
-    uint32_t (*get)   (uint16_t);            /* uint32_t get   ( uint16_t lid );                       */
-    uint32_t (*set)   (uint16_t);            /* uint32_t set   ( uint16_t lid );                       */
+    void     (*init)   (void);                /* void     init    ( void);                                */
+    bool     (*test_hw)(void);                /* bool     test_hw ( void );                               */
+    bool     (*check)  (uint16_t);            /* bool     check   ( uint16_t lid );                       */
+    void     (*start)  (uint16_t);            /* void     start   ( uint16_t lid );                       */
+    void     (*end)    (uint16_t);            /* void     end     ( uint16_t lid );                       */
+    uint32_t (*sched)  (uint16_t, uint32_t);  /* uint32_t sched   ( uint16_t lid, uint32_t tick );        */
+    void     (*poll)   (uint32_t);            /* void     poll    ( uint32_t tick );                      */
+    uint32_t (*weigth) (uint16_t);            /* uint32_t weigth  ( uint16_t lid );                       */
+    uint32_t (*get)    (uint16_t);            /* uint32_t get     ( uint16_t lid );                       */
+    uint32_t (*set)    (uint16_t);            /* uint32_t set     ( uint16_t lid );                       */
 };
 
 extern const plc_io_metods_t plc_iom_registry[];
@@ -29,28 +30,30 @@ extern uint8_t mid_from_pid( uint16_t proto );
 
 #define PLC_IOM_RC_LINE(proto,method) .method = PLC_IOM_CONCAT2(proto, PLC_IOM_CONCAT(_,method))
 
-#define PLC_IOM_RECORD(proto)     \
-{                                 \
-    PLC_IOM_RC_LINE(proto,init),  \
-    PLC_IOM_RC_LINE(proto,check), \
-    PLC_IOM_RC_LINE(proto,start), \
-    PLC_IOM_RC_LINE(proto,end),   \
-    PLC_IOM_RC_LINE(proto,sched), \
-    PLC_IOM_RC_LINE(proto,poll),  \
-    PLC_IOM_RC_LINE(proto,weigth),\
-    PLC_IOM_RC_LINE(proto,get),   \
-    PLC_IOM_RC_LINE(proto,set),   \
+#define PLC_IOM_RECORD(proto)        \
+{                                    \
+    PLC_IOM_RC_LINE(proto,init),     \
+    PLC_IOM_RC_LINE(proto,test_hw),  \
+    PLC_IOM_RC_LINE(proto,check),    \
+    PLC_IOM_RC_LINE(proto,start),    \
+    PLC_IOM_RC_LINE(proto,end),      \
+    PLC_IOM_RC_LINE(proto,sched),    \
+    PLC_IOM_RC_LINE(proto,poll),     \
+    PLC_IOM_RC_LINE(proto,weigth),   \
+    PLC_IOM_RC_LINE(proto,get),      \
+    PLC_IOM_RC_LINE(proto,set),      \
 }
 
-#define PLC_IOM_LOCAL_INIT   PLC_IOM_CONCAT2(LOCAL_PROTO,_init)
-#define PLC_IOM_LOCAL_CHECK  PLC_IOM_CONCAT2(LOCAL_PROTO,_check)
-#define PLC_IOM_LOCAL_START  PLC_IOM_CONCAT2(LOCAL_PROTO,_start)
-#define PLC_IOM_LOCAL_END    PLC_IOM_CONCAT2(LOCAL_PROTO,_end)
-#define PLC_IOM_LOCAL_SCHED  PLC_IOM_CONCAT2(LOCAL_PROTO,_sched)
-#define PLC_IOM_LOCAL_POLL   PLC_IOM_CONCAT2(LOCAL_PROTO,_poll)
-#define PLC_IOM_LOCAL_WEIGTH PLC_IOM_CONCAT2(LOCAL_PROTO,_weigth)
-#define PLC_IOM_LOCAL_GET    PLC_IOM_CONCAT2(LOCAL_PROTO,_get)
-#define PLC_IOM_LOCAL_SET    PLC_IOM_CONCAT2(LOCAL_PROTO,_set)
+#define PLC_IOM_LOCAL_INIT     PLC_IOM_CONCAT2(LOCAL_PROTO,_init)
+#define PLC_IOM_LOCAL_TEST_HW  PLC_IOM_CONCAT2(LOCAL_PROTO,_test_hw)
+#define PLC_IOM_LOCAL_CHECK    PLC_IOM_CONCAT2(LOCAL_PROTO,_check)
+#define PLC_IOM_LOCAL_START    PLC_IOM_CONCAT2(LOCAL_PROTO,_start)
+#define PLC_IOM_LOCAL_END      PLC_IOM_CONCAT2(LOCAL_PROTO,_end)
+#define PLC_IOM_LOCAL_SCHED    PLC_IOM_CONCAT2(LOCAL_PROTO,_sched)
+#define PLC_IOM_LOCAL_POLL     PLC_IOM_CONCAT2(LOCAL_PROTO,_poll)
+#define PLC_IOM_LOCAL_WEIGTH   PLC_IOM_CONCAT2(LOCAL_PROTO,_weigth)
+#define PLC_IOM_LOCAL_GET      PLC_IOM_CONCAT2(LOCAL_PROTO,_get)
+#define PLC_IOM_LOCAL_SET      PLC_IOM_CONCAT2(LOCAL_PROTO,_set)
 
 typedef struct _plc_iom_t plc_iom_t;
 
@@ -65,8 +68,9 @@ struct _plc_iom_t
 extern plc_iom_t plc_iom; /*!<plc io maschine*/
 
 void plc_iom_init(void);
-void plc_iom_tick(void);
+bool plc_iom_test_hw(void);
 bool plc_iom_check_and_sort(void);
+void plc_iom_tick(void);
 void plc_iom_get(void);
 void plc_iom_set(void);
 void plc_iom_poll(void);

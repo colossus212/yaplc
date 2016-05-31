@@ -89,6 +89,19 @@ void plc_iom_tick(void)
     plc_iom.tick++;
 }
 
+bool plc_iom_test_hw(void)
+{
+    uint8_t j;
+    for (j = 0; j < plc_iom_reg_sz; j++)
+    {
+        if (false == plc_iom_registry[j].test_hw())
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 #ifndef PLC_IOM_ASSERT
 #   include <stdio.h>
 #   define PLC_IOM_ASSERT printf
@@ -212,26 +225,26 @@ void plc_iom_poll(void)
     uint8_t j;
 
     PLC_DISABLE_INTERRUPTS();
+    tick = plc_iom.tick;
+
     if (plc_iom.tflg)
     {
         plc_iom.tflg = false;
-        tick = plc_iom.tick;
         PLC_ENABLE_INTERRUPTS();
+        /*I/O scheduling is done on tick*/
+        o_end = plc_curr_app->l_sz;
+
+        for (i = 0; i < o_end; i++)
+        {
+            j = mid_from_pid( plc_curr_app->l_tab[i]->proto );
+            plc_curr_app->w_tab[i] += plc_iom_registry[j].sched(i, tick);
+        }
     }
     else
     {
         PLC_ENABLE_INTERRUPTS();
-        return;
     }
-
-    o_end = plc_curr_app->l_sz;
-
-    for (i = 0; i < o_end; i++)
-    {
-        j = mid_from_pid( plc_curr_app->l_tab[i]->proto );
-        plc_curr_app->w_tab[i] += plc_iom_registry[j].sched(i, tick);
-    }
-
+    /*I/O polling is done always*/
     for (j = 0; j < plc_iom_reg_sz; j++)
     {
         plc_iom_registry[j].poll(tick);

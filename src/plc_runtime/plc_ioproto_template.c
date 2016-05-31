@@ -5,6 +5,10 @@
 void PLC_IOM_LOCAL_INIT(void)
 {
 }
+bool PLC_IOM_LOCAL_TEST_HW(void)
+{
+    return true;
+}
 bool PLC_IOM_LOCAL_CHECK(uint16_t lid)
 {
     return false;

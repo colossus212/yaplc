@@ -14,13 +14,11 @@
 #include <plc_hw.h>
 #include <plc_iom.h>
 
-uint32_t plc_hw_status = 0;
-
-bool  plc_check_hw(void)
+void plc_jmpr_init(void)
 {
     ///Write your code here!!!
-    return false;  ///Everuthing is OK by default
 }
+
 bool plc_dbg_jmpr_get(void)
 {
     ///Write your code here!!!
@@ -33,12 +31,6 @@ bool plc_rst_jmpr_get(void)
 {
     ///Write your code here!!!
     return plc_get_din(8);
-}
-
-void plc_error_hse(void)
-{
-    ///Write your code here!!!
-    return;  ///Must return!!!
 }
 
 void plc_boot_init(void)
@@ -64,7 +56,7 @@ void plc_boot_mode_enter(void)
 
 //Led blink timer
 static uint32_t blink_tmr;
-void plc_hw_init(void)
+void plc_heart_beat_init(void)
 {
     ///LEDs
     PLC_CLEAR_TIMER( blink_tmr );
@@ -92,7 +84,7 @@ const char plc_hse_err_msg[] = "HSE oscilator failed!";
 static bool lse_post_flag = true;
 const char plc_lse_err_msg[] = "LSE oscilator failed!";
 
-void plc_heart_beat(void)
+void plc_heart_beat_poll(void)
 {
     uint32_t blink_thr;
     if( plc_hw_status > 0 )
@@ -277,6 +269,11 @@ void PLC_IOM_LOCAL_INIT(void)
     //DI8
     rcc_periph_clock_enable(PLC_I8_PERIPH);
     gpio_mode_setup(PLC_I8_PORT, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, PLC_I8_PIN);
+}
+
+bool PLC_IOM_LOCAL_TEST_HW(void)
+{
+    return true;
 }
 
 static char print_buf[128];

@@ -5,6 +5,7 @@
 
 #define LOCAL_PROTO p*
 void PLC_IOM_LOCAL_INIT(void);
+bool PLC_IOM_LOCAL_TEST_HW(void)
 bool PLC_IOM_LOCAL_CHECK(uint16_t lid);
 void PLC_IOM_LOCAL_START(uint16_t lid);
 void PLC_IOM_LOCAL_END(uint16_t lid);
