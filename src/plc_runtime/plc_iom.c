@@ -119,6 +119,8 @@ bool plc_iom_check_and_sort(void)
 
     for (i = 0; i < o_end; i++)
     {
+        plc_iom_check_print(i);
+
         j = mid_from_pid( PLC_APP->l_tab[i]->proto );
         //Check protocol
         if (PLC_IOM_MID_ERROR == j)

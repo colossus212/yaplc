@@ -280,7 +280,7 @@ static char print_buf[128];
 static const char print_lt[] = {'I','M','Q'};
 static const char print_sz[] = {'X','B','W','D','L'};
 
-void plc_loc_check_print(uint16_t i)
+void plc_iom_check_print(uint16_t i)
 {
     int cnt;
     cnt = sprintf(
@@ -322,7 +322,6 @@ const char plc_dio_err_olim[]  = "Digital input must have address 1...4!";
 bool PLC_IOM_LOCAL_CHECK(uint16_t i)
 {
     uint32_t addr;
-    plc_loc_check_print(i);
     //Check size
     if (PLC_LSZ_X != PLC_APP->l_tab[i]->v_size)
     {

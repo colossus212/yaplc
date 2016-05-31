@@ -75,4 +75,6 @@ void plc_iom_get(void);
 void plc_iom_set(void);
 void plc_iom_poll(void);
 
+extern void plc_iom_check_print(uint16_t i);
+
 #endif // _PLC_IOM_H_
