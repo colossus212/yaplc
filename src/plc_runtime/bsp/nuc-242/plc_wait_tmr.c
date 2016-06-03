@@ -21,8 +21,8 @@ void plc_wait_tmr_init(void)
     timer_continuous_mode  ( PLC_WAIT_TMR );
     timer_set_period       ( PLC_WAIT_TMR, 1000 ); //1KHz
 
-	timer_enable_counter    ( PLC_WAIT_TMR );
-	timer_enable_irq        ( PLC_WAIT_TMR, TIM_DIER_UIE);
+	timer_enable_counter   ( PLC_WAIT_TMR );
+	timer_enable_irq       ( PLC_WAIT_TMR, TIM_DIER_UIE);
 
 	nvic_enable_irq( PLC_WAIT_TMR_VECTOR );
 }

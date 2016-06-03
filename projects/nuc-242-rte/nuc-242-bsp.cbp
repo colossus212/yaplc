@@ -60,10 +60,33 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_backup.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_config.h" />
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_hw.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_tick.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_wait_tmr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/frac_div.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/frac_div.h" />
+		<Unit filename="../../src/plc_runtime/plc_hw.h" />
+		<Unit filename="../../src/plc_runtime/plc_libc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/plc_rtc.h" />
+		<Unit filename="../../src/plc_runtime/plc_tick.h" />
+		<Unit filename="../../src/plc_runtime/plc_wait_tmr.h" />
 		<Extensions>
 			<envvars />
 			<code_completion />

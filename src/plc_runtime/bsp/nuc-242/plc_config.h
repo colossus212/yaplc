@@ -129,11 +129,12 @@
 *  Backup domain offsets
 */
 ///TODO: correct these!
-#define PLC_BKP_VER1_OFFSET      0
-#define PLC_BKP_VER2_OFFSET      4
-#define PLC_BKP_RTC_IS_OK_OFFSET 8
-#define PLC_BKP_REG_OFFSET       12
+#define PLC_BKP_VER1_OFFSET      0x0
+#define PLC_BKP_VER2_OFFSET      0x4
+#define PLC_BKP_RTC_IS_OK_OFFSET 0x8
 
+#define PLC_BKP_REG_OFFSET       0x40
+#define PLC_BKP_REG_NUM 32
 /*
 *  PLC app abi
 */

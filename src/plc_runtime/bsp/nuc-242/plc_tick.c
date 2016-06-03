@@ -24,7 +24,7 @@ static bool systick_set_period(uint32_t period, uint32_t ahb, uint8_t clk_source
 //Пороговый период
 #define TICK_THR_PER 500000000ULL
 //Частота в МГц
-#define RCC_AHB_FREQ    168UL
+#define RCC_AHB_FREQ    72UL
 
 //Контроллер системного таймера.
 static frac_div_t systick_ctrl;
@@ -74,7 +74,7 @@ void plc_tick_setup( uint64_t tick_next, uint64_t tick_period )
         {
             //Примерно до 0.1с
             tick_state = TICK_STATE_HIGH;
-            frac_div_init( &systick_ctrl, tick_period, 1000ULL ); //Коррекция приода
+            frac_div_init( &systick_ctrl, tick_period, 1000ULL ); //Коррекция периода
         }
         else
         {

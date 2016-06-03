@@ -59,9 +59,8 @@ void plc_boot_mode_enter(void)
 static uint32_t blink_tmr;
 void plc_heart_beat_init(void)
 {
-//    ///LEDs
-//    PLC_CLEAR_TIMER( blink_tmr );
-//    //LED1
+    //LEDs
+    PLC_CLEAR_TIMER( blink_tmr );
 
     rcc_periph_clock_enable( PLC_LED_STG_PERIPH );
     gpio_set_mode(PLC_LED_STG_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, PLC_LED_STG_PIN);
@@ -89,6 +88,11 @@ const char plc_lse_err_msg[] = "LSE oscilator failed!";
 
 void plc_heart_beat_poll(void)
 {
+    if( PLC_TIMER(blink_tmr) >= 500 )
+    {
+        PLC_CLEAR_TIMER( blink_tmr );
+        gpio_toggle(PLC_LED_STG_PORT, PLC_LED_STG_PIN);
+    }
 //    uint32_t blink_thr;
 //    if( plc_hw_status > 0 )
 //    {
@@ -315,6 +319,7 @@ void plc_iom_check_print(uint16_t i)
     }
     //Must use default app here
     plc_curr_app->log_msg_post(LOG_DEBUG, (char *)print_buf, cnt+1);
+    PLC_APP->log_msg_post(LOG_DEBUG, (char *)print_buf, cnt+1);
 }
 
 const char plc_iom_err_proto[] = "IO protocol is not supported!";

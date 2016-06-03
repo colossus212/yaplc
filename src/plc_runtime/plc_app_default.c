@@ -12,7 +12,7 @@
 
 static unsigned long __tick = 0;
 #define LOG_BUFFER_SIZE (1<<10) /*1Ko*/
-#define LOG_BUFFER_ATTRS __attribute__ ((section(".plc_log_buf_sec")))
+//#define LOG_BUFFER_ATTRS __attribute__ ((section(".plc_log_buf_sec")))
 
 static void PLC_GetTime( IEC_TIME *curent_time )
 {

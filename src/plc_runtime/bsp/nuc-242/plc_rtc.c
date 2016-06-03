@@ -6,78 +6,14 @@
 #include <plc_hw.h>
 #include <plc_config.h>
 
-#define PLC_BKP_RTC_IS_OK   MMIO32(RTC_BKP_BASE + PLC_BKP_RTC_IS_OK_OFFSET)
+#define PLC_RTC_DIV_VAL 0x7FFF
 
 uint32_t plc_rtc_is_ok(void)
 {
-    return PLC_BKP_RTC_IS_OK;
-}
+    rcc_periph_clock_enable(RCC_PWR);
+    rcc_periph_clock_enable(RCC_BKP);
 
-void plc_rtc_init( tm* time )
-{
-    uint32_t tmp=0;
-    uint32_t year;
-    uint32_t i;
-
-    rcc_periph_clock_enable( RCC_PWR );
-
-    pwr_disable_backup_domain_write_protect();
-
-    PLC_BKP_RTC_IS_OK = 0;
-
-    /* LSE oscillator clock used as the RTC clock */
-    RCC_BDCR |= 0x00000100;
-    RCC_BDCR |= RCC_BDCR_LSEON;
-
-    rcc_periph_clock_enable( RCC_RTC );
-
-    rtc_unlock();
-
-    RTC_ISR |= RTC_ISR_INIT;
-    for(i=0; i<1000000; i++)
-    {
-        if( RTC_ISR & RTC_ISR_INITF )
-        {
-            break;
-        }
-    }
-
-    if( !(RTC_ISR & RTC_ISR_INITF) )
-    {
-        plc_hw_status |= PLC_HW_ERR_LSE;
-
-        RTC_ISR &= ~RTC_ISR_INIT;
-        pwr_enable_backup_domain_write_protect();
-        return;
-    }
-
-    rtc_set_prescaler( 0x1FF, 0x3F );
-
-    tmp  =  (unsigned long)(time->tm_sec%10 );
-    tmp |= ((unsigned long)(time->tm_sec/10 )) <<  4;
-    tmp |= ((unsigned long)(time->tm_min%10 )) <<  8;
-    tmp |= ((unsigned long)(time->tm_min/10 )) << 12;
-    tmp |= ((unsigned long)(time->tm_hour%10)) << 16;
-    tmp |= ((unsigned long)(time->tm_hour/10)) << 20;
-    RTC_TR = tmp;
-
-    /* Only 2 digits used!!! *time may be const, so use year var. */
-    year = time->tm_year % 100;
-
-    tmp  =  (unsigned long)(time->tm_day%10 );
-    tmp |= ((unsigned long)(time->tm_day/10 )) <<  4;
-    tmp |= ((unsigned long)(time->tm_mon%10 )) <<  8;
-    tmp |= ((unsigned long)(time->tm_mon/10 )) << 12;
-    tmp |= ((unsigned long)(year%10)) << 16;
-    tmp |= ((unsigned long)(year/10)) << 20;
-    RTC_DR = tmp;
-
-    /* exit from initialization mode */
-    RTC_ISR &= ~RTC_ISR_INIT;
-
-    PLC_BKP_RTC_IS_OK = 1;
-
-    pwr_enable_backup_domain_write_protect();
+    return rcc_rtc_clock_enabled_flag();
 }
 
 /*
@@ -129,48 +65,130 @@ static uint32_t dt_to_sec( tm *date_time )
     return ret;
 }
 
-///WARNING, this function is not reentrant!!!
+static void  jdn_to_dt ( uint32_t jdn, tm *date_time)
+{
+        uint32_t a,b,c,d,e,m;
+
+        a = jdn + 32044;
+        b = (4 * a + 3) /146097;
+        c = a - (146097 * b) /4;
+        d = (4 * c + 3) /1461;
+        e = c - (1461 * d) /4;
+        m = (5 * e + 2) /153;
+
+        date_time->tm_year = 100*b + d - 4800 + (m/10);
+        date_time->tm_mon = m + 3 - 12 * (m /10);
+        date_time->tm_day = e - (153 * m + 2) /5 + 1;
+}
+
+void  sec_to_dt ( uint32_t utime, tm *date_time)
+{
+        date_time->tm_sec = utime%60;
+        utime /= 60;
+        date_time->tm_min = utime%60;
+        utime /= 60;
+        date_time->tm_hour = utime%24;
+        utime /= 24;       //Unix day number
+        utime += 2440588ul; //JDN
+
+        jdn_to_dt(utime, date_time);
+}
+
+
+void plc_rtc_init( tm* time )
+{
+    uint32_t i;
+
+    rcc_periph_clock_enable(RCC_PWR);
+    rcc_periph_clock_enable(RCC_BKP);
+
+    pwr_disable_backup_domain_write_protect();
+
+    /* LSE oscillator clock used as the RTC clock */
+
+    if (!rcc_rtc_clock_enabled_flag())
+    {
+        RCC_BDCR |= RCC_BDCR_LSEON;
+
+        i = 0;
+        while (0 == (RCC_BDCR & RCC_BDCR_LSERDY))
+        {
+            if (i++ > 1000000)
+            {
+                goto lse_error;
+            }
+        }
+        //LSE is OK, may now set the clock
+        RCC_BDCR &= ~((1 << 8) | (1 << 9));
+        RCC_BDCR |= (1 << 8);
+    }
+
+    rtc_enter_config_mode();
+
+    /* Reset values */
+    RTC_CRH = 0;
+    RTC_CRL = 0x20;
+    /* We have 32,768KHz clock, set 0x7fff*/
+    RTC_PRLL = PLC_RTC_DIV_VAL     & 0xffff;;
+    RTC_PRLH = PLC_RTC_DIV_VAL>>16 & 0x000f;;
+    //Get date and time, set counters.
+    i = dt_to_sec( time );
+    RTC_CNTH = (i >> 16) & 0xffff;
+    RTC_CNTL =         i & 0xffff;
+
+    RTC_ALRH = 0xFFFF;
+    RTC_ALRL = 0xFFFF;
+
+    rtc_exit_config_mode();
+
+    rcc_enable_rtc_clock();
+
+    /* Wait for the RSF bit in RTC_CRL to be set by hardware. */
+    RTC_CRL &= ~RTC_CRL_RSF;
+    i = 0;
+    while (0 == (RTC_CRL & RTC_CRL_RSF))
+    {
+        if (i++ > 1000000)
+        {
+            goto lse_error;
+        }
+    }
+    /* Wait for the last write operation to finish. */
+    /* TODO: Necessary? */
+    i = 0;
+    while (0 == (RTC_CRL & RTC_CRL_RSF))
+    {
+        if (i++ > 1000000)
+        {
+            goto lse_error;
+        }
+    }
+    /* Normal termination */
+    pwr_enable_backup_domain_write_protect();
+    return;
+    /* LSE error occured */
+lse_error:
+    plc_hw_status |= PLC_HW_ERR_LSE;
+    pwr_enable_backup_domain_write_protect();
+}
+
 void plc_rtc_time_get( IEC_TIME *current_time )
 {
-    static tm curr;
-    static uint32_t rtc_ssr, rtc_tr, rtc_dr, rtc_prediv_s;
+    uint32_t sub_sec;
 
-    /* Read regs AQAP */
-    rtc_ssr = RTC_SSR;
-    rtc_tr  = RTC_TR;
-    rtc_dr  = RTC_DR;
-
-    curr.tm_sec   = (unsigned char)(  rtc_tr & 0x0000000F);
-    curr.tm_sec  += (unsigned char)(((rtc_tr & 0x000000F0) >> 4 ) * 10 );
-    curr.tm_min   = (unsigned char)( (rtc_tr & 0x00000F00) >> 8);
-    curr.tm_min  += (unsigned char)(((rtc_tr & 0x0000F000) >> 12 ) * 10 );
-    curr.tm_hour  = (unsigned char)( (rtc_tr & 0x000F0000) >> 16);
-    curr.tm_hour += (unsigned char)(((rtc_tr & 0x00F00000) >> 20 ) * 10 );
-
-    curr.tm_day   = (unsigned char)(  rtc_dr & 0x0000000F);
-    curr.tm_day  += (unsigned char)(((rtc_dr & 0x00000030) >> 4 ) * 10 );
-    curr.tm_mon   = (unsigned char)( (rtc_dr & 0x00000F00) >> 8);
-    curr.tm_mon  += (unsigned char)(((rtc_dr & 0x00001000) >> 12 ) * 10 );
-    curr.tm_year  = (unsigned char)( (rtc_dr & 0x000F0000) >> 16);
-    curr.tm_year += (unsigned char)(((rtc_dr & 0x00F00000) >> 20 ) * 10 );
-    curr.tm_year += 2000; // 16 is actually 2016
-
-    /* Convert current date/time to unix time seconds */
-    current_time->tv_sec = dt_to_sec( &curr );
-
+    current_time->tv_sec = rtc_get_counter_val();
     /* Add subseconds! */
-    rtc_prediv_s = RTC_PRER & 0x7FFF;
+    sub_sec = rtc_get_prescale_div_val();
     /* Check for time shift... */
-    if( rtc_ssr > rtc_prediv_s )
+    if (sub_sec > PLC_RTC_DIV_VAL)
     {
         /* This is NOT normal RTC operation!!! */
-        current_time->tv_sec--;
         current_time->tv_nsec = 0;
         return;
     }
     else
     {
-        current_time->tv_nsec = (((rtc_prediv_s - rtc_ssr)*10000ul)/(rtc_prediv_s + 1))*100000ul;
+        current_time->tv_nsec = (((PLC_RTC_DIV_VAL - sub_sec)*10000ul)/(PLC_RTC_DIV_VAL + 1))*100000ul;
     }
 }
 
