@@ -16,7 +16,10 @@
 
 void plc_jmpr_init(void)
 {
-    ///Write your code here!!!
+    rcc_periph_clock_enable(PLC_JMP_RST_PERIPH);
+    gpio_set_mode(PLC_JMP_RST_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_JMP_RST_PIN);
+    gpio_clear(PLC_JMP_RST_PORT, PLC_JMP_RST_PIN); //Pull down!
+    /*!TODO: Add debug jumper!!!*/
 }
 
 bool plc_dbg_jmpr_get(void)
@@ -29,8 +32,7 @@ volatile bool reset_jmp = false;
 
 bool plc_rst_jmpr_get(void)
 {
-    ///Write your code here!!!
-    return plc_get_din(8);
+    return gpio_get(PLC_JMP_RST_PORT, PLC_JMP_RST_PIN);
 }
 
 void plc_boot_init(void)
@@ -137,6 +139,58 @@ void plc_heart_beat_poll(void)
 //    }
 }
 
+#ifdef PLC_CFG_INPF
+/*50Hz filters*/
+#define PLC_INPF_TIMEOUT 20 /*20ms timeout*/
+typedef struct{
+    uint32_t cnt;
+    bool    flg;
+}plc_inpf;
+
+void plc_inpf_init(plc_inpf * self)
+{
+    self->flg = false;
+    self->cnt = 0;
+}
+
+bool plc_inpf_do(plc_inpf * self, bool pin)
+{
+    if (pin){
+        self->flg = true;
+        self->cnt = 0;
+        return true;
+    }else{
+        return self->flg;
+    }
+}
+
+void plc_inpf_poll(plc_inpf * self, bool pin)
+{
+    if (pin){
+        self->flg = true;
+        self->cnt = 0;
+    }else{
+        if (PLC_INPF_TIMEOUT < self->cnt){
+            self->flg = false;
+        }else{
+            self->cnt++;
+        }
+    }
+}
+
+plc_inpf inpf[8];
+
+#define PLC_INPF_INIT(i) plc_inpf_init(inpf+i-1)
+#define PLC_INPF_GET(i) (plc_inpf_do(inpf+i-1, plc_get_din(i)))
+#define PLC_INPF_POLL(i) plc_inpf_poll(inpf+i-1, plc_get_din(i))
+
+#else //PLC_CFG_INPF
+
+#define PLC_INPF_INIT(i) do{}while(0)
+#define PLC_INPF_GET(i) (plc_get_din(i))
+#define PLC_INPF_POLL(i) do{}while(0)
+
+#endif //PLC_CFG_INPF
 bool plc_get_din(uint32_t i)
 {
     switch( i )
@@ -248,35 +302,43 @@ void PLC_IOM_LOCAL_INIT(void)
     gpio_set_mode(PLC_O4_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, PLC_O4_PIN);
     gpio_clear( PLC_O4_PORT, PLC_O4_PIN );
     ///Inputs
-    //DI2
-    rcc_periph_clock_enable(PLC_I2_PERIPH);
-    gpio_set_mode(PLC_I2_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_I2_PIN);
-    gpio_set(PLC_I2_PORT, PLC_I2_PIN);
     //DI1
+    PLC_INPF_INIT(1);
     rcc_periph_clock_enable(PLC_I1_PERIPH);
     gpio_set_mode(PLC_I1_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_I1_PIN);
     gpio_set(PLC_I1_PORT, PLC_I1_PIN);
+    //DI2
+    PLC_INPF_INIT(2);
+    rcc_periph_clock_enable(PLC_I2_PERIPH);
+    gpio_set_mode(PLC_I2_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_I2_PIN);
+    gpio_set(PLC_I2_PORT, PLC_I2_PIN);
     //DI3
+    PLC_INPF_INIT(3);
     rcc_periph_clock_enable(PLC_I3_PERIPH);
     gpio_set_mode(PLC_I3_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_I3_PIN);
     gpio_set(PLC_I3_PORT, PLC_I3_PIN);
     //DI4
+    PLC_INPF_INIT(4);
     rcc_periph_clock_enable(PLC_I4_PERIPH);
     gpio_set_mode(PLC_I4_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_I4_PIN);
     gpio_set(PLC_I4_PORT, PLC_I4_PIN);
     //DI5
+    PLC_INPF_INIT(5);
     rcc_periph_clock_enable(PLC_I5_PERIPH);
     gpio_set_mode(PLC_I5_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_I5_PIN);
     gpio_set(PLC_I5_PORT, PLC_I5_PIN);
     //DI6
+    PLC_INPF_INIT(6);
     rcc_periph_clock_enable(PLC_I6_PERIPH);
     gpio_set_mode(PLC_I6_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_I6_PIN);
     gpio_set(PLC_I6_PORT, PLC_I6_PIN);
     //DI7
+    PLC_INPF_INIT(7);
     rcc_periph_clock_enable(PLC_I7_PERIPH);
     gpio_set_mode(PLC_I7_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_I7_PIN);
     gpio_set(PLC_I7_PORT, PLC_I7_PIN);
     //DI8
+    PLC_INPF_INIT(8);
     rcc_periph_clock_enable(PLC_I8_PERIPH);
     gpio_set_mode(PLC_I8_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, PLC_I8_PIN);
     gpio_set(PLC_I8_PORT, PLC_I8_PIN);
@@ -390,8 +452,9 @@ void PLC_IOM_LOCAL_START(uint16_t lid)
 void PLC_IOM_LOCAL_END(uint16_t lid)
 {
 }
-uint32_t PLC_IOM_LOCAL_SCHED(uint16_t lid, uint32_t tick)
+uint32_t PLC_IOM_LOCAL_SCHED(uint16_t i, uint32_t tick)
 {
+    PLC_INPF_POLL( plc_curr_app->l_tab[i]->a_data[0] );
     return 0;
 }
 void PLC_IOM_LOCAL_POLL(uint32_t tick)
@@ -405,7 +468,7 @@ uint32_t PLC_IOM_LOCAL_GET(uint16_t i)
 {
     if( PLC_LT_I == plc_curr_app->l_tab[i]->v_type )
     {
-        *(bool *)(plc_curr_app->l_tab[i]->v_buf) = plc_get_din( plc_curr_app->l_tab[i]->a_data[0] );
+        *(bool *)(plc_curr_app->l_tab[i]->v_buf) = PLC_INPF_GET( plc_curr_app->l_tab[i]->a_data[0] );
     }
     return 0;
 }
@@ -418,21 +481,3 @@ uint32_t PLC_IOM_LOCAL_SET(uint16_t i)
     return 0;
 }
 #undef LOCAL_PROTO
-const plc_io_metods_t plc_iom_registry[] =
-{
-    PLC_IOM_RECORD(dio),
-};
-//Must be declared after plc_iom_registry
-PLC_IOM_REG_SZ_DECL;
-
-uint8_t mid_from_pid( uint16_t proto )
-{
-    switch(proto)
-    {
-    case 0:
-        return 0;
-    default:
-        return PLC_IOM_MID_ERROR;
-    }
-    return PLC_IOM_MID_ERROR;
-}

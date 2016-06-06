@@ -55,6 +55,18 @@ extern uint8_t mid_from_pid( uint16_t proto );
 #define PLC_IOM_LOCAL_GET      PLC_IOM_CONCAT2(LOCAL_PROTO,_get)
 #define PLC_IOM_LOCAL_SET      PLC_IOM_CONCAT2(LOCAL_PROTO,_set)
 
+#define PLC_IOM_METH_DECLS(proto)                                             \
+extern void     PLC_IOM_CONCAT2(proto,_init)   (void);                        \
+extern bool     PLC_IOM_CONCAT2(proto,_test_hw)(void);                        \
+extern bool     PLC_IOM_CONCAT2(proto,_check)  (uint16_t lid);                \
+extern void     PLC_IOM_CONCAT2(proto,_start)  (uint16_t lid);                \
+extern void     PLC_IOM_CONCAT2(proto,_end)    (uint16_t lid);                \
+extern uint32_t PLC_IOM_CONCAT2(proto,_sched)  (uint16_t lid, uint32_t tick); \
+extern void     PLC_IOM_CONCAT2(proto,_poll)   (uint32_t tick);               \
+extern uint32_t PLC_IOM_CONCAT2(proto,_weigth) (uint16_t lid);                \
+extern uint32_t PLC_IOM_CONCAT2(proto,_get)    (uint16_t lid);                \
+extern uint32_t PLC_IOM_CONCAT2(proto,_set)    (uint16_t lid)
+
 typedef struct _plc_iom_t plc_iom_t;
 
 struct _plc_iom_t
@@ -65,7 +77,7 @@ struct _plc_iom_t
     bool     tflg;    /*!<tick flag              */
 };
 
-extern plc_iom_t plc_iom; /*!<plc io maschine*/
+extern plc_iom_t plc_iom; /*!<plc io manager*/
 
 void plc_iom_init(void);
 bool plc_iom_test_hw(void);

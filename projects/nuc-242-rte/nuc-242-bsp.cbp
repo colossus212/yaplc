@@ -67,6 +67,9 @@
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_hw.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_iom_reg.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>

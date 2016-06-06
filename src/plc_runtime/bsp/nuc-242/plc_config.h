@@ -33,6 +33,19 @@
 #define DBG_USART_TX_PERIPH RCC_GPIOB
 #define DBG_USART_RX_PERIPH RCC_GPIOB
 
+
+/*
+*  Jumpers
+*/
+#define PLC_JMP_RST_PERIPH RCC_GPIOB
+#define PLC_JMP_RST_PORT   GPIOB
+#define PLC_JMP_RST_PIN    GPIO8
+
+///TODO: Add debug jumper!
+//#define PLC_JMP_DBG_PERIPH RCC_GPIOB
+//#define PLC_JMP_DBG_PORT   GPIOB
+//#define PLC_JMP_DBG_PIN    GPIO9
+
 /*
 *  Boot pin
 */
