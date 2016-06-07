@@ -5,8 +5,8 @@
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/cm3/nvic.h>
 
-#include <plc_dbg.h>
 #include <plc_config.h>
+#include <plc_dbg.h>
 
 static unsigned char usart_data = 0x00;
 static dbg_fifo_t usart_rx_buf, usart_tx_buf;
@@ -16,24 +16,21 @@ void dbg_serial_init(void)
     dbg_fifo_flush( &usart_rx_buf );
     dbg_fifo_flush( &usart_tx_buf );
 
-    rcc_periph_clock_enable( DBG_USART_PERIPH );
-    rcc_periph_clock_enable( DBG_USART_TX_PERIPH );
+    rcc_periph_clock_enable(RCC_AFIO);
+    rcc_periph_clock_enable(DBG_USART_PERIPH);
+    rcc_periph_clock_enable(DBG_USART_TX_PERIPH);
 #if (DBG_USART_RX_PERIPH != DBG_USART_TX_PERIPH)
-    rcc_periph_clock_enable( DBG_USART_RX_PERIPH );
+    rcc_periph_clock_enable(DBG_USART_RX_PERIPH);
 #endif
     /* Enable the DBG_USART interrupt. */
 	nvic_enable_irq(DBG_USART_VECTOR);
 
 	/* Setup GPIO pins for USART transmit. */
-	gpio_mode_setup(DBG_USART_TX_PORT, GPIO_MODE_AF, GPIO_PUPD_NONE, DBG_USART_TX_PIN);
+	gpio_set_mode(DBG_USART_TX_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, DBG_USART_TX_PIN);
 
 	/* Setup GPIO pins for USART receive. */
-	gpio_mode_setup(DBG_USART_RX_PORT, GPIO_MODE_AF, GPIO_PUPD_PULLUP, DBG_USART_RX_PIN);
-	gpio_set_output_options(DBG_USART_RX_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_25MHZ, DBG_USART_RX_PIN);
-
-	/* Setup USART TX and RX pin as alternate function. */
-	gpio_set_af(DBG_USART_TX_PORT, GPIO_AF7, DBG_USART_TX_PIN);
-	gpio_set_af(DBG_USART_RX_PORT, GPIO_AF7, DBG_USART_RX_PIN);
+	gpio_set_mode(DBG_USART_RX_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, DBG_USART_RX_PIN);
+    gpio_set(DBG_USART_RX_PORT, DBG_USART_RX_PIN);
 
 	/* Setup USART parameters. */
 	usart_set_baudrate    (DBG_USART, 57600);

@@ -112,8 +112,7 @@ static void pll_setup( const clk_cfg *clock )
     /* Select PLL source. */
     rcc_set_pll_source(clock->pll_src);
 
-    if (RCC_CFGR_PLLSRC_HSE_CLK==clock->pll_src)
-    {
+    if (RCC_CFGR_PLLSRC_HSE_CLK==clock->pll_src){
         /*Divide external frequency if needed*/
         rcc_set_pllxtpre(clock->pll_xtpre);
     }
@@ -148,10 +147,8 @@ void plc_clock_setup(void)
 
     /* Try to setup HSE oscilator. */
     rcc_osc_on(RCC_HSE);
-    for( i = 0; i < 1000000; i++ )
-    {
-        if( RCC_CR & RCC_CR_HSERDY )
-        {
+    for (i = 0; i < 1000000; i++){
+        if (RCC_CR & RCC_CR_HSERDY){
             /* Sucess. */
             pll_is_dirty = true;
             pll_setup( &PLC_HSE_CONFIG );
@@ -170,17 +167,13 @@ void plc_clock_setup(void)
 
 void nmi_handler(void)
 {
-    if( RCC_CIR & RCC_CIR_CSSF )
-    {
+    if (RCC_CIR & RCC_CIR_CSSF){
         /* Clear CSS interrupt! */
         RCC_CIR |= RCC_CIR_CSSC;
-        if( pll_is_dirty )
-        {
+        if (pll_is_dirty){
             /* We can't call rcc_pll_setup now, just reset the system. */
             scb_reset_system();
-        }
-        else
-        {
+        }else{
             /* We are already on HSI, so we need only PLL setup. */
             pll_setup( &cfg_hsi );
             /* This is an error, but we can do some work... */

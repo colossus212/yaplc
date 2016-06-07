@@ -76,6 +76,9 @@
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_serial.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_tick.c">
 			<Option compilerVar="CC" />
 		</Unit>
