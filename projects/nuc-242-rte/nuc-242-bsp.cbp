@@ -63,6 +63,9 @@
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_backup.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_clock.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_config.h" />
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_hw.c">
 			<Option compilerVar="CC" />

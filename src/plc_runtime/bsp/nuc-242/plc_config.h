@@ -14,7 +14,7 @@
 /*
 *  PLC clocks
 */
-//#define PLC_HSE_CONFIG rcc_hse_16mhz_3v3
+#define PLC_HSE_CONFIG cfg_hse_16Mhz
 
 /*
 *  Debug USART

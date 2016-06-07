@@ -90,53 +90,50 @@ const char plc_lse_err_msg[] = "LSE oscilator failed!";
 
 void plc_heart_beat_poll(void)
 {
-    if( PLC_TIMER(blink_tmr) >= 500 )
+    uint32_t blink_thr;
+    if( plc_hw_status > 0 )
     {
-        PLC_CLEAR_TIMER( blink_tmr );
-        gpio_toggle(PLC_LED_STG_PORT, PLC_LED_STG_PIN);
+        blink_thr = 500;
     }
-//    uint32_t blink_thr;
-//    if( plc_hw_status > 0 )
-//    {
-//        blink_thr = 500;
-//    }
-//    else
-//    {
-//        blink_thr = 1000;
-//    }
-//
-//    if( PLC_TIMER(blink_tmr) > (blink_thr>>1) )
-//    {
-//        gpio_set( PLC_LED1_PORT, PLC_LED1_PIN );
-//        //if(  *(uint8_t *)BKPSRAM_BASE == 1 )
-//        if(plc_hw_status  & PLC_HW_ERR_HSE)
-//        {
-//            if( hse_post_flag )
-//            {
-//                hse_post_flag = false;
-//                plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_hse_err_msg, sizeof(plc_hse_err_msg));
-//            }
-//            gpio_set( PLC_LED2_PORT, PLC_LED2_PIN );
-//        }
-//        //if( *( (uint8_t *)BKPSRAM_BASE + 1) == 1 )
-//        if(plc_hw_status  & PLC_HW_ERR_LSE)
-//        {
-//            if( lse_post_flag )
-//            {
-//                lse_post_flag = false;
-//                plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_lse_err_msg, sizeof(plc_lse_err_msg));
-//            }
-//            gpio_set( PLC_LED3_PORT, PLC_LED3_PIN );
-//        }
-//    }
-//
-//    if( PLC_TIMER(blink_tmr) > blink_thr )
-//    {
-//        PLC_CLEAR_TIMER(blink_tmr);
-//        gpio_clear( PLC_LED1_PORT, PLC_LED1_PIN );
-//        gpio_clear( PLC_LED2_PORT, PLC_LED2_PIN );
-//        gpio_clear( PLC_LED3_PORT, PLC_LED3_PIN );
-//    }
+    else
+    {
+        blink_thr = 1000;
+    }
+
+    if( PLC_TIMER(blink_tmr) > (blink_thr>>1) )
+    {
+        //if(  *(uint8_t *)BKPSRAM_BASE == 1 )
+        if(plc_hw_status  & PLC_HW_ERR_HSE)
+        {
+            if( hse_post_flag )
+            {
+                hse_post_flag = false;
+                //plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_hse_err_msg, sizeof(plc_hse_err_msg));
+            }
+            gpio_set( PLC_LED_STR_PORT, PLC_LED_STR_PIN );
+        }
+        else
+        {
+            gpio_set( PLC_LED_STG_PORT, PLC_LED_STG_PIN );
+        }
+        //if( *( (uint8_t *)BKPSRAM_BASE + 1) == 1 )
+        if(plc_hw_status  & PLC_HW_ERR_LSE)
+        {
+            if( lse_post_flag )
+            {
+                lse_post_flag = false;
+                //plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_lse_err_msg, sizeof(plc_lse_err_msg));
+            }
+            gpio_set( PLC_LED_STR_PORT, PLC_LED_STR_PIN );
+        }
+    }
+
+    if( PLC_TIMER(blink_tmr) > blink_thr )
+    {
+        PLC_CLEAR_TIMER(blink_tmr);
+        gpio_clear( PLC_LED_STR_PORT, PLC_LED_STR_PIN );
+        gpio_clear( PLC_LED_STG_PORT, PLC_LED_STG_PIN );
+    }
 }
 
 #ifdef PLC_CFG_INPF

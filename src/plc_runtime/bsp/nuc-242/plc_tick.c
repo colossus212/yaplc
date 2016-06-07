@@ -24,7 +24,7 @@ static bool systick_set_period(uint32_t period, uint32_t ahb, uint8_t clk_source
 //Пороговый период
 #define TICK_THR_PER 500000000ULL
 //Частота в МГц
-#define RCC_AHB_FREQ    72UL
+#define RCC_AHB_FREQ    64UL
 
 //Контроллер системного таймера.
 static frac_div_t systick_ctrl;

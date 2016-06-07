@@ -16,7 +16,7 @@ void plc_wait_tmr_init(void)
     rcc_periph_clock_enable( PLC_WAIT_TMR_PERIPH );
 
     timer_reset            ( PLC_WAIT_TMR );
-    timer_set_prescaler    ( PLC_WAIT_TMR, (( rcc_apb1_frequency * 2 )/ 1000000 - 1) ); //1MHz
+    timer_set_prescaler    ( PLC_WAIT_TMR, ((2*rcc_apb1_frequency)/1000000ul - 1)); //1MHz
     timer_disable_preload  ( PLC_WAIT_TMR );
     timer_continuous_mode  ( PLC_WAIT_TMR );
     timer_set_period       ( PLC_WAIT_TMR, 1000 ); //1KHz
