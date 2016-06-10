@@ -1,21 +1,17 @@
 #ifndef _PLC_CONFIG_H_
 #define _PLC_CONFIG_H_
-
 /*
-*  NUC-227-DEV configuration!
+*  NUC-242 configuration!
 */
-
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/cm3/cortex.h>
 
 #define PLC_DISABLE_INTERRUPTS cm_disable_interrupts
 #define PLC_ENABLE_INTERRUPTS  cm_enable_interrupts
-
 /*
 *  PLC clocks
 */
 #define PLC_HSE_CONFIG cfg_hse_16Mhz
-
 /*
 *  Debug USART
 */
@@ -24,16 +20,20 @@
 #define DBG_USART_VECTOR NVIC_USART3_IRQ
 #define DBG_USART_ISR    usart3_isr
 
-#define DBG_USART_TX_PORT GPIOB
-#define DBG_USART_RX_PORT GPIOB
-
-#define DBG_USART_TX_PIN GPIO_USART3_TX
-#define DBG_USART_RX_PIN GPIO_USART3_RX
-
 #define DBG_USART_TX_PERIPH RCC_GPIOB
+#define DBG_USART_TX_PORT   GPIOB
+#define DBG_USART_TX_PIN    GPIO_USART3_TX
+
 #define DBG_USART_RX_PERIPH RCC_GPIOB
-
-
+#define DBG_USART_RX_PORT   GPIOB
+#define DBG_USART_RX_PIN    GPIO_USART3_RX
+/*
+*  PLC wait timer
+*/
+#define PLC_WAIT_TMR_PERIPH RCC_TIM7
+#define PLC_WAIT_TMR        TIM7
+#define PLC_WAIT_TMR_VECTOR NVIC_TIM7_IRQ
+#define PLC_WAIT_TMR_ISR    tim7_isr
 /*
 *  Jumpers
 */
@@ -45,17 +45,38 @@
 //#define PLC_JMP_DBG_PERIPH RCC_GPIOB
 //#define PLC_JMP_DBG_PORT   GPIOB
 //#define PLC_JMP_DBG_PIN    GPIO9
-
 /*
 *  Boot pin
 */
 #define PLC_BOOT_PERIPH RCC_GPIOA
 #define PLC_BOOT_PORT   GPIOA
 #define PLC_BOOT_PIN    GPIO15
-
 /*
-*  TODO: Add modbus usart
+*  Modbus usart
 */
+#define MB_USART        USART1
+#define MB_USART_PERIPH RCC_USART1
+#define MB_USART_VECTOR NVIC_USART1_IRQ
+#define MB_USART_ISR    usart1_isr
+
+#define MB_USART_TXEN_PERIPH RCC_GPIOA
+#define MB_USART_TXEN_PORT   GPIOA
+#define MB_USART_TXEN_PIN    GPIO8
+
+#define MB_USART_TX_PERIPH RCC_GPIOA
+#define MB_USART_TX_PORT   GPIOA
+#define MB_USART_TX_PIN    GPIO_USART1_TX
+
+#define MB_USART_RX_PERIPH RCC_GPIOA
+#define MB_USART_RX_PORT   GPIOA
+#define MB_USART_RX_PIN    GPIO_USART1_RX
+/*
+*  Modbus timer
+*/
+#define MB_TMR_PERIPH RCC_TIM6
+#define MB_TMR        TIM6
+#define MB_TMR_VECTOR NVIC_TIM6_IRQ
+#define MB_TMR_ISR    tim6_isr
 
 /*
 *  PLC LEDS
@@ -75,7 +96,6 @@
 #define PLC_LED_RX_PERIPH RCC_GPIOC
 #define PLC_LED_RX_PORT   GPIOC
 #define PLC_LED_RX_PIN    GPIO8
-
 /*
 * PLC Inputs
 */
@@ -110,7 +130,6 @@
 #define PLC_I8_PERIPH RCC_GPIOB
 #define PLC_I8_PORT   GPIOB
 #define PLC_I8_PIN    GPIO15
-
 /*
 * PLC Outputs
 */
@@ -129,15 +148,6 @@
 #define PLC_O4_PERIPH RCC_GPIOD
 #define PLC_O4_PORT   GPIOD
 #define PLC_O4_PIN    GPIO2
-
-/*
-*  PLC wait timer
-*/
-#define PLC_WAIT_TMR_PERIPH RCC_TIM7
-#define PLC_WAIT_TMR        TIM7
-#define PLC_WAIT_TMR_VECTOR NVIC_TIM7_IRQ
-#define PLC_WAIT_TMR_ISR    tim7_isr
-
 /*
 *  Backup domain offsets
 */
@@ -152,14 +162,12 @@
 *  PLC app abi
 */
 #define PLC_APP ((plc_app_abi_t *)0x08008000)
-
 /*
 *  PLC RTE Version
 */
 #define PLC_RTE_VER_MAJOR 3
 #define PLC_RTE_VER_MINOR 0
 #define PLC_RTE_VER_PATCH 0
-
 /*
 *  Logging
 */
