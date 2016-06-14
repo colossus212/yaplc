@@ -191,22 +191,22 @@ void MB_USART_ISR(void)
 	/* Check if we were called because of RXNE. */
 	if (((USART_CR1(MB_USART) & USART_CR1_RXNEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_RXNE) != 0)){
         pxMBFrameCBByteReceived();
-        /* Check if we need to disable transmitter*/
+	}
+	/* Check if we were called because of TXE. */
+	if (((USART_CR1(MB_USART) & USART_CR1_TXEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TXE) != 0)){
+	    pxMBFrameCBTransmitterEmpty();
+	    /* Check if we need to disable transmitter*/
 	    if(!txen){
             USART_SR (MB_USART) &= ~USART_SR_TC;   /* Clear TC flag*/
 	        USART_CR1(MB_USART) |= USART_CR1_TCIE; /* Enable transfer complite interrupt*/
 	    }
 	}
-    /* Disable transmitter on transfer comlite*/
+	/* Disable transmitter on transfer comlite*/
 	if (((USART_CR1(MB_USART) & USART_CR1_TCIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TC) != 0)){
 	        USART_CR1(MB_USART) &= ~USART_CR1_TCIE;/* Disble transfer complite interrupt*/
             USART_SR (MB_USART) &= ~USART_SR_TC;   /* Clear TC flag*/
             /* Disable transmitter*/
             gpio_clear(MB_USART_TXEN_PORT, MB_USART_TXEN_PIN);
-	}
-	/* Check if we were called because of TXE. */
-	if (((USART_CR1(MB_USART) & USART_CR1_TXEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TXE) != 0)){
-	    pxMBFrameCBTransmitterEmpty();
 	}
 }
 

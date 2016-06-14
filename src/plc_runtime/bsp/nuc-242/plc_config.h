@@ -65,11 +65,11 @@
 
 #define MB_USART_TX_PERIPH RCC_GPIOA
 #define MB_USART_TX_PORT   GPIOA
-#define MB_USART_TX_PIN    GPIO_USART1_TX
+#define MB_USART_TX_PIN    GPIO9
 
 #define MB_USART_RX_PERIPH RCC_GPIOA
 #define MB_USART_RX_PORT   GPIOA
-#define MB_USART_RX_PIN    GPIO_USART1_RX
+#define MB_USART_RX_PIN    GPIO10
 /*
 *  Modbus timer
 */

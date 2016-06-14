@@ -52,7 +52,7 @@ typedef int32_t LONG;
 #endif
 
 #define MB_PORT_HAS_CLOSE	                    1
-#define MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS    2
+#define MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS    0
 
 /* ----------------------- Prototypes ---------------------------------------*/
 void vMBPortEnterCritical( void );

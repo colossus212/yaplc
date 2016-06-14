@@ -13,6 +13,18 @@
 #include <plc_backup.h>
 #include <plc_dbg.h>
 
+/* ----------------------- Modbus includes ----------------------------------*/
+#include "mb.h"
+
+/* ----------------------- Defines ------------------------------------------*/
+#define REG_HOLDING_START 0
+#define REG_HOLDING_NREGS 64
+
+/* ----------------------- Static variables ---------------------------------*/
+static unsigned short usRegHoldingStart = REG_HOLDING_START;
+static unsigned short usRegHoldingBuf[REG_HOLDING_NREGS];
+
+
 uint32_t plc_hw_status = 0;
 
 void plc_iom_tick(void)
@@ -143,8 +155,18 @@ int main(void)
     plc_backup_init();
     plc_rtc_init( (tm *)&default_date );
     dbg_serial_init();
-
     PLC_ENABLE_INTERRUPTS();
+
+
+    eMBInit( MB_RTU, 0x01, 0, 9600, MB_PAR_NONE );
+    {
+        int i;
+        for( i = 0; i < REG_HOLDING_NREGS; i++ )
+        {
+            usRegHoldingBuf[i] = ( unsigned short )i;
+        }
+    }
+    eMBEnable(  );
 
     if( plc_hw_status )
     {
@@ -183,6 +205,75 @@ int main(void)
         plc_set_dout(4, plc_get_din(4)||plc_get_din(8));
 
         dbg_serial_write(buf, dbg_serial_read( buf, 128 ));
+
+        eMBPoll();
     }
     return -1;
+}
+
+
+eMBErrorCode
+eMBRegInputCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs )
+{
+    return MB_ENOREG;
+}
+
+eMBErrorCode
+eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs,
+                 eMBRegisterMode eMode )
+{
+    eMBErrorCode    eStatus = MB_ENOERR;
+    int             iRegIndex;
+
+    if( ( usAddress >= REG_HOLDING_START ) &&
+        ( usAddress + usNRegs <= REG_HOLDING_START + REG_HOLDING_NREGS ) )
+    {
+        iRegIndex = ( int )( usAddress - usRegHoldingStart );
+        switch ( eMode )
+        {
+                /* Pass current register values to the protocol stack. */
+            case MB_REG_READ:
+                while( usNRegs > 0 )
+                {
+                    *pucRegBuffer++ =
+                        ( unsigned char )( usRegHoldingBuf[iRegIndex] >> 8 );
+                    *pucRegBuffer++ =
+                        ( unsigned char )( usRegHoldingBuf[iRegIndex] &
+                                           0xFF );
+                    iRegIndex++;
+                    usNRegs--;
+                }
+                break;
+
+                /* Update current register values with new values from the
+                 * protocol stack. */
+            case MB_REG_WRITE:
+                while( usNRegs > 0 )
+                {
+                    usRegHoldingBuf[iRegIndex] = *pucRegBuffer++ << 8;
+                    usRegHoldingBuf[iRegIndex] |= *pucRegBuffer++;
+                    iRegIndex++;
+                    usNRegs--;
+                }
+        }
+    }
+    else
+    {
+        eStatus = MB_ENOREG;
+    }
+    return eStatus;
+}
+
+
+eMBErrorCode
+eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNCoils,
+               eMBRegisterMode eMode )
+{
+    return MB_ENOREG;
+}
+
+eMBErrorCode
+eMBRegDiscreteCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNDiscrete )
+{
+    return MB_ENOREG;
 }

@@ -38,6 +38,7 @@
 			<Add option="-ffunction-sections" />
 			<Add option="-fdata-sections" />
 			<Add option="-DSTM32F1" />
+			<Add option="-DNDEBUG" />
 			<Add directory="../../src/plc_runtime" />
 			<Add directory="../../src/plc_runtime/bsp/nuc-242" />
 			<Add directory="../../../libopencm3/include" />
@@ -64,13 +65,48 @@
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/ascii/mbascii.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/ascii/mbascii.h" />
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/functions/mbfunccoils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/functions/mbfuncdiag.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/functions/mbfuncdisc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/functions/mbfuncholding.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/functions/mbfuncinput.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/functions/mbfuncother.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/functions/mbutils.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mb.h" />
-		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbconfig.h" />
 		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbframe.h" />
 		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbfunc.h" />
 		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbport.h" />
 		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbproto.h" />
 		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbutils.h" />
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/mb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/rtu/mbcrc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/rtu/mbcrc.h" />
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/rtu/mbrtu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/rtu/mbrtu.h" />
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/fmb_port/port.h" />
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/fmb_port/portevent.c">
 			<Option compilerVar="CC" />
@@ -84,6 +120,7 @@
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/fmb_port/porttimer.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/mbconfig.h" />
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_backup.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -126,7 +163,7 @@
 			<debugger>
 				<search_path add="bin/Debug" />
 				<remote_debugging>
-					<options conn_type="0" serial_baud="115200" ip_address="127.0.0.1" ip_port="4242" additional_cmds="load&#x0A;tb main&#x0A;monitor reset" additional_cmds_before="shell xterm -e st-util &amp; disown&#x0A;set remotetimeout 60000" />
+					<options conn_type="0" serial_baud="115200" ip_address="127.0.0.1" ip_port="4242" additional_cmds="load&#x0A;tb main&#x0A;monitor jtag_reset" additional_cmds_before="shell xterm -e st-util &amp; disown&#x0A;set remotetimeout 60000" />
 				</remote_debugging>
 			</debugger>
 			<lib_finder disable_auto="1" />

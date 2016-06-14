@@ -73,6 +73,15 @@ vMBPortTimersDisable(  )
 	timer_disable_counter(MB_TMR);
 }
 
+void vMBPortTimersDelay( USHORT usTimeOutMS )
+{
+    /*Not supproted*/
+#if MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS > 0
+#   error "MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS > 0 is not supported!!!"
+#endif
+}
+
+
 /* ----------------------- Timer ISR -----------------------------*/
 /* Create an ISR which is called whenever the timer has expired. This function
  * must then call pxMBPortCBTimerExpired( ) to notify the protocol stack that
