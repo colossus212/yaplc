@@ -35,11 +35,11 @@
 #include "mbport.h"
 
 #include <plc_config.h>
+static bool txen = false;
 /* ----------------------- Enable USART interrupts -----------------------------*/
 void
 vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
 {
-    bool txen = false;
     /* If xRXEnable enable serial receive interrupts. If xTxENable enable
      * transmitter empty interrupts.
      */
@@ -56,6 +56,8 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
     if (xTxEnable)
     {
         txen = true;
+        gpio_set(MB_USART_TXEN_PORT, MB_USART_TXEN_PIN);
+
 		usart_enable_tx_interrupt(MB_USART);
     }
     else
@@ -63,13 +65,6 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
         txen = false;
 		usart_disable_tx_interrupt(MB_USART);
     }
-
-    if (txen){
-        gpio_set  (MB_USART_TXEN_PORT, MB_USART_TXEN_PIN);
-    }else{
-        gpio_clear(MB_USART_TXEN_PORT, MB_USART_TXEN_PIN);
-    }
-
 }
 
 /* ----------------------- Initialize USART ----------------------------------*/
@@ -126,24 +121,25 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
     switch (ucDataBits)
     {
     case 8:
-		if (eParity == MB_PAR_NONE)
+		if (eParity == MB_PAR_NONE){
 			wordLength = 8;
-		else
+		}else{
 			wordLength = 9;
+		}
         usart_set_databits(MB_USART,wordLength);
         break;
     case 7:
-		if (eParity == MB_PAR_NONE)
+		if (eParity == MB_PAR_NONE){
 			bStatus = FALSE;
-		else
+		}else{
         	usart_set_databits(MB_USART,8);
+		}
         break;
     default:
         bStatus = FALSE;
     }
 
-    if( bStatus == TRUE )
-    {
+    if( bStatus == TRUE ){
 		/* Finally enable the USART. */
 		usart_disable_rx_interrupt(MB_USART);
 		usart_disable_tx_interrupt(MB_USART);
@@ -190,16 +186,26 @@ vMBPortSerialClose(void)
  * xMBPortSerialPutByte( ) to send the character.
  */
 /* Find out what interrupted and get or send data as appropriate */
-void usart1_isr(void)
+void MB_USART_ISR(void)
 {
 	/* Check if we were called because of RXNE. */
-	if (((USART_CR1(MB_USART) & USART_CR1_RXNEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_RXNE) != 0))
-	{
-	    pxMBFrameCBByteReceived();
+	if (((USART_CR1(MB_USART) & USART_CR1_RXNEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_RXNE) != 0)){
+        pxMBFrameCBByteReceived();
+        /* Check if we need to disable transmitter*/
+	    if(!txen){
+            USART_SR (MB_USART) &= ~USART_SR_TC;   /* Clear TC flag*/
+	        USART_CR1(MB_USART) |= USART_CR1_TCIE; /* Enable transfer complite interrupt*/
+	    }
+	}
+    /* Disable transmitter on transfer comlite*/
+	if (((USART_CR1(MB_USART) & USART_CR1_TCIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TC) != 0)){
+	        USART_CR1(MB_USART) &= ~USART_CR1_TCIE;/* Disble transfer complite interrupt*/
+            USART_SR (MB_USART) &= ~USART_SR_TC;   /* Clear TC flag*/
+            /* Disable transmitter*/
+            gpio_clear(MB_USART_TXEN_PORT, MB_USART_TXEN_PIN);
 	}
 	/* Check if we were called because of TXE. */
-	if (((USART_CR1(MB_USART) & USART_CR1_TXEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TXE) != 0))
-	{
+	if (((USART_CR1(MB_USART) & USART_CR1_TXEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TXE) != 0)){
 	    pxMBFrameCBTransmitterEmpty();
 	}
 }

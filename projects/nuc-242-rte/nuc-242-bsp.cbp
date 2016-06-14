@@ -42,6 +42,10 @@
 			<Add directory="../../src/plc_runtime/bsp/nuc-242" />
 			<Add directory="../../../libopencm3/include" />
 			<Add directory="../../../matiec/lib/C" />
+			<Add directory="../../src/freemodbus-v1.5.0/modbus/include" />
+			<Add directory="../../src/freemodbus-v1.5.0/modbus/rtu" />
+			<Add directory="../../src/freemodbus-v1.5.0/modbus/ascii" />
+			<Add directory="../../src/plc_runtime/bsp/nuc-242/fmb_port" />
 		</Compiler>
 		<Linker>
 			<Add option="-mthumb" />
@@ -58,6 +62,26 @@
 			<Mode after="always" />
 		</ExtraCommands>
 		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mb.h" />
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbconfig.h" />
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbframe.h" />
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbfunc.h" />
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbport.h" />
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbproto.h" />
+		<Unit filename="../../src/freemodbus-v1.5.0/modbus/include/mbutils.h" />
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/fmb_port/port.h" />
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/fmb_port/portevent.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/fmb_port/portother.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/fmb_port/portserial.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/bsp/nuc-242/fmb_port/porttimer.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_backup.c">

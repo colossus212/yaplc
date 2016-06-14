@@ -110,6 +110,9 @@ int dbg_fifo_read( dbg_fifo_t * fifo, unsigned char *d, unsigned short n)
 
 uint8_t buf[256];
 
+extern BOOL xMBPortTimersInit( uint16_t usTim1Timerout50us );
+extern void vMBPortTimersEnable();
+extern void vMBPortTimersDisable();
 
 extern void dio_init(void);
 
@@ -140,6 +143,7 @@ int main(void)
     plc_backup_init();
     plc_rtc_init( (tm *)&default_date );
     dbg_serial_init();
+
     PLC_ENABLE_INTERRUPTS();
 
     if( plc_hw_status )
@@ -165,7 +169,7 @@ int main(void)
             plc_tick_flag = false;
             j++;
         }
-        if (j>=500)
+        if (j>=100)
         {
             j = 0;
             //gpio_toggle(PLC_LED_STG_PORT, PLC_LED_STG_PIN);

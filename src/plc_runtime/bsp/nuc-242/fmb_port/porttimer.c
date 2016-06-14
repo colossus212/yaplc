@@ -38,14 +38,18 @@
 BOOL
 xMBPortTimersInit( USHORT usTim1Timerout50us )
 {
+    rcc_periph_clock_enable( RCC_GPIOA );
+    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO1);
+    gpio_clear( GPIOA, GPIO1 );
+
 	/* Enable TIM clock. */
 	rcc_periph_clock_enable(MB_TMR_PERIPH);
  	nvic_enable_irq        (MB_TMR_VECTOR);
 	timer_reset            (MB_TMR);
     /* Timer global mode: - Divider 4, Alignment edge, Direction up */
-	//timer_set_mode       (MB_TMR, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+	timer_set_mode       (MB_TMR, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
 	timer_continuous_mode(MB_TMR);
-	timer_set_prescaler  (MB_TMR, ((2*rcc_apb1_frequency)/50000000ul - 1)); /* 50 microseconds period */
+	timer_set_prescaler  (MB_TMR, ((2*rcc_apb1_frequency)/20000ul - 1)); /* 50 microseconds period */
 	timer_set_period     (MB_TMR, usTim1Timerout50us);
     return TRUE;
 }
@@ -55,7 +59,7 @@ inline void
 vMBPortTimersEnable(  )
 {
     /* Restart the timer with the period value set in xMBPortTimersInit( ) */
-	TIM_CNT(MB_TMR) = 0;
+	TIM_CNT(MB_TMR) = 1; /* Yes, this must be 1 !!! */
 
 	timer_enable_irq     (MB_TMR, TIM_DIER_UIE);
 	timer_enable_counter (MB_TMR);
