@@ -84,6 +84,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/plc_runtime/bsp/nuc-227-dev/stm32f4disco-rte.ld" />
+		<Unit filename="../../src/plc_runtime/dbnc_flt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/dbnc_flt.h" />
 		<Unit filename="../../src/plc_runtime/frac_div.c">
 			<Option compilerVar="CC" />
 		</Unit>

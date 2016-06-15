@@ -2,6 +2,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/pwr.h>
+#include <libopencm3/stm32/rtc.h>
+
 #include <plc_backup.h>
 #include <plc_hw.h>
 
