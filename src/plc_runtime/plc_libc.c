@@ -47,15 +47,15 @@ int sprintf(char *buf, const char *fmt, ...)
 
     out_ptr = buf;
     out_cnt = 0;
-	xdev_out(out_stub);
+    xdev_out(out_stub);
 
-	va_start(args, fmt);
-	xvprintf(fmt, args);
-	va_end(args);
+    va_start(args, fmt);
+    xvprintf(fmt, args);
+    va_end(args);
 
-	xdev_out(0);
-	buf[out_cnt] = 0;//Terminate string.
+    xdev_out(0);
+    buf[out_cnt] = 0;//Terminate string.
 
-	return out_cnt;
+    return out_cnt;
 }
 

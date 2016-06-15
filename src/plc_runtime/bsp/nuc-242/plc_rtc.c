@@ -67,31 +67,31 @@ static uint32_t dt_to_sec( tm *date_time )
 
 static void  jdn_to_dt ( uint32_t jdn, tm *date_time)
 {
-        uint32_t a,b,c,d,e,m;
+    uint32_t a,b,c,d,e,m;
 
-        a = jdn + 32044;
-        b = (4 * a + 3) /146097;
-        c = a - (146097 * b) /4;
-        d = (4 * c + 3) /1461;
-        e = c - (1461 * d) /4;
-        m = (5 * e + 2) /153;
+    a = jdn + 32044;
+    b = (4 * a + 3) /146097;
+    c = a - (146097 * b) /4;
+    d = (4 * c + 3) /1461;
+    e = c - (1461 * d) /4;
+    m = (5 * e + 2) /153;
 
-        date_time->tm_year = 100*b + d - 4800 + (m/10);
-        date_time->tm_mon = m + 3 - 12 * (m /10);
-        date_time->tm_day = e - (153 * m + 2) /5 + 1;
+    date_time->tm_year = 100*b + d - 4800 + (m/10);
+    date_time->tm_mon = m + 3 - 12 * (m /10);
+    date_time->tm_day = e - (153 * m + 2) /5 + 1;
 }
 
 void  sec_to_dt ( uint32_t utime, tm *date_time)
 {
-        date_time->tm_sec = utime%60;
-        utime /= 60;
-        date_time->tm_min = utime%60;
-        utime /= 60;
-        date_time->tm_hour = utime%24;
-        utime /= 24;       //Unix day number
-        utime += 2440588ul; //JDN
+    date_time->tm_sec = utime%60;
+    utime /= 60;
+    date_time->tm_min = utime%60;
+    utime /= 60;
+    date_time->tm_hour = utime%24;
+    utime /= 24;       //Unix day number
+    utime += 2440588ul; //JDN
 
-        jdn_to_dt(utime, date_time);
+    jdn_to_dt(utime, date_time);
 }
 
 

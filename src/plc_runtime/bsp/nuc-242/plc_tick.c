@@ -39,19 +39,19 @@ void sys_tick_handler(void)
 {
     switch( tick_state )
     {
-        case TICK_STATE_MID:
-        case TICK_STATE_HIGH:
-        default:
-        {
-            systick_set_reload( RCC_AHB_FREQ * (uint32_t)frac_div_icalc( &systick_ctrl ) - 1 );
-            plc_tick_flag = true;
-            break;
-        }
-        case TICK_STATE_LOW:
-        {
-            plc_tick_flag = frac_div_run( &systick_ctrl );
-            break;
-        }
+    case TICK_STATE_MID:
+    case TICK_STATE_HIGH:
+    default:
+    {
+        systick_set_reload( RCC_AHB_FREQ * (uint32_t)frac_div_icalc( &systick_ctrl ) - 1 );
+        plc_tick_flag = true;
+        break;
+    }
+    case TICK_STATE_LOW:
+    {
+        plc_tick_flag = frac_div_run( &systick_ctrl );
+        break;
+    }
     }
 }
 
@@ -93,5 +93,5 @@ void plc_tick_setup( uint64_t tick_next, uint64_t tick_period )
     }
 
     systick_counter_enable();
-	systick_interrupt_enable();
+    systick_interrupt_enable();
 }

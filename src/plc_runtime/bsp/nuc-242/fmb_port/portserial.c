@@ -46,11 +46,11 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
     if (xRxEnable)
     {
         txen = false;
-		usart_enable_rx_interrupt(MB_USART);
+        usart_enable_rx_interrupt(MB_USART);
     }
     else
     {
-		usart_disable_rx_interrupt(MB_USART);
+        usart_disable_rx_interrupt(MB_USART);
     }
 
     if (xTxEnable)
@@ -58,12 +58,12 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
         txen = true;
         gpio_set(MB_USART_TXEN_PORT, MB_USART_TXEN_PIN);
 
-		usart_enable_tx_interrupt(MB_USART);
+        usart_enable_tx_interrupt(MB_USART);
     }
     else
     {
         txen = false;
-		usart_disable_tx_interrupt(MB_USART);
+        usart_disable_tx_interrupt(MB_USART);
     }
 }
 
@@ -74,29 +74,29 @@ BOOL
 xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity eParity )
 {
     BOOL bStatus;
-	rcc_periph_clock_enable(RCC_AFIO);
-    rcc_periph_clock_enable(MB_USART_PERIPH);
-    rcc_periph_clock_enable(MB_USART_TX_PERIPH);
-#if (MB_USART_RX_PERIPH != MB_USART_TX_PERIPH)
-    rcc_periph_clock_enable(MB_USART_RX_PERIPH);
+    rcc_periph_clock_enable(RCC_AFIO            );
+    rcc_periph_clock_enable(MB_USART_PERIPH     );
+    rcc_periph_clock_enable(MB_USART_TX_PERIPH  );
+#if (MB_USART_TX_PERIPH != MB_USART_RX_PERIPH)
+    rcc_periph_clock_enable(MB_USART_RX_PERIPH  );
 #endif
-#if (MB_USART_TXEN_PERIPH != MB_USART_TX_PERIPH)
-    rcc_periph_clock_enable( MB_USART_TXEN_PERIPH );
+#if (MB_USART_TX_PERIPH != MB_USART_RX_PERIPH)
+    rcc_periph_clock_enable(MB_USART_TXEN_PERIPH);
 #endif
     /*Setup TxEN pin*/
     gpio_set_mode(MB_USART_TXEN_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, MB_USART_TXEN_PIN);
     gpio_clear(MB_USART_TXEN_PORT, MB_USART_TXEN_PIN);
     /*Setup TxD pin*/
-	gpio_set_mode(MB_USART_TX_PERIPH, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, MB_USART_TX_PIN);
-	/*Setup RxD pin*/
-	gpio_set_mode(MB_USART_RX_PERIPH, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, MB_USART_RX_PIN);
-	/* Enable the MB_USART interrupt. */
-	nvic_enable_irq(MB_USART_VECTOR);
-	/* Setup UART parameters. */
-	usart_set_baudrate    (MB_USART, ulBaudRate            );
-	usart_set_stopbits    (MB_USART, USART_STOPBITS_1      );
-	usart_set_flow_control(MB_USART, USART_FLOWCONTROL_NONE);
-	usart_set_mode        (MB_USART, USART_MODE_TX_RX      );
+    gpio_set_mode(MB_USART_TX_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, MB_USART_TX_PIN);
+    /*Setup RxD pin*/
+    gpio_set_mode(MB_USART_RX_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, MB_USART_RX_PIN);
+    /* Enable the MB_USART interrupt. */
+    nvic_enable_irq(MB_USART_VECTOR);
+    /* Setup UART parameters. */
+    usart_set_baudrate    (MB_USART, ulBaudRate            );
+    usart_set_stopbits    (MB_USART, USART_STOPBITS_1      );
+    usart_set_flow_control(MB_USART, USART_FLOWCONTROL_NONE);
+    usart_set_mode        (MB_USART, USART_MODE_TX_RX      );
 
     bStatus = TRUE;
     switch (eParity)
@@ -115,35 +115,42 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
         break;
     }
 
-   /* Oddity of STM32F series: word length includes parity. 7 bits no parity
-   not possible */
+    /* Oddity of STM32F series: word length includes parity. 7 bits no parity
+    not possible */
     CHAR wordLength;
     switch (ucDataBits)
     {
     case 8:
-		if (eParity == MB_PAR_NONE){
-			wordLength = 8;
-		}else{
-			wordLength = 9;
-		}
+        if (eParity == MB_PAR_NONE)
+        {
+            wordLength = 8;
+        }
+        else
+        {
+            wordLength = 9;
+        }
         usart_set_databits(MB_USART,wordLength);
         break;
     case 7:
-		if (eParity == MB_PAR_NONE){
-			bStatus = FALSE;
-		}else{
-        	usart_set_databits(MB_USART,8);
-		}
+        if (eParity == MB_PAR_NONE)
+        {
+            bStatus = FALSE;
+        }
+        else
+        {
+            usart_set_databits(MB_USART,8);
+        }
         break;
     default:
         bStatus = FALSE;
     }
 
-    if( bStatus == TRUE ){
-		/* Finally enable the USART. */
-		usart_disable_rx_interrupt(MB_USART);
-		usart_disable_tx_interrupt(MB_USART);
-		usart_enable(MB_USART);
+    if( bStatus == TRUE )
+    {
+        /* Finally enable the USART. */
+        usart_disable_rx_interrupt(MB_USART);
+        usart_disable_tx_interrupt(MB_USART);
+        usart_enable(MB_USART);
     }
     return bStatus;
 }
@@ -155,7 +162,7 @@ xMBPortSerialPutByte(CHAR ucByte)
     /* Put a byte in the UARTs transmit buffer. This function is called
      * by the protocol stack if pxMBFrameCBTransmitterEmpty( ) has been
      * called. */
-	usart_send(MB_USART, ucByte);
+    usart_send(MB_USART, ucByte);
     return TRUE;
 }
 
@@ -166,7 +173,7 @@ xMBPortSerialGetByte(CHAR * pucByte)
     /* Return the byte in the UARTs receive buffer. This function is called
      * by the protocol stack after pxMBFrameCBByteReceived( ) has been called.
      */
-	*pucByte = (CHAR)usart_recv(MB_USART);
+    *pucByte = (CHAR)usart_recv(MB_USART);
     return TRUE;
 }
 
@@ -174,8 +181,8 @@ xMBPortSerialGetByte(CHAR * pucByte)
 void
 vMBPortSerialClose(void)
 {
-	nvic_disable_irq(MB_USART_VECTOR);
-	usart_disable   (MB_USART);
+    nvic_disable_irq(MB_USART_VECTOR);
+    usart_disable   (MB_USART);
 }
 
 /* ----------------------- USART ISR ----------------------------------*/
@@ -188,25 +195,29 @@ vMBPortSerialClose(void)
 /* Find out what interrupted and get or send data as appropriate */
 void MB_USART_ISR(void)
 {
-	/* Check if we were called because of RXNE. */
-	if (((USART_CR1(MB_USART) & USART_CR1_RXNEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_RXNE) != 0)){
+    /* Check if we were called because of RXNE. */
+    if (((USART_CR1(MB_USART) & USART_CR1_RXNEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_RXNE) != 0))
+    {
         pxMBFrameCBByteReceived();
-	}
-	/* Check if we were called because of TXE. */
-	if (((USART_CR1(MB_USART) & USART_CR1_TXEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TXE) != 0)){
-	    pxMBFrameCBTransmitterEmpty();
-	    /* Check if we need to disable transmitter*/
-	    if(!txen){
+    }
+    /* Check if we were called because of TXE. */
+    if (((USART_CR1(MB_USART) & USART_CR1_TXEIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TXE) != 0))
+    {
+        pxMBFrameCBTransmitterEmpty();
+        /* Check if we need to disable transmitter*/
+        if(!txen)
+        {
             USART_SR (MB_USART) &= ~USART_SR_TC;   /* Clear TC flag*/
-	        USART_CR1(MB_USART) |= USART_CR1_TCIE; /* Enable transfer complite interrupt*/
-	    }
-	}
-	/* Disable transmitter on transfer comlite*/
-	if (((USART_CR1(MB_USART) & USART_CR1_TCIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TC) != 0)){
-	        USART_CR1(MB_USART) &= ~USART_CR1_TCIE;/* Disble transfer complite interrupt*/
-            USART_SR (MB_USART) &= ~USART_SR_TC;   /* Clear TC flag*/
-            /* Disable transmitter*/
-            gpio_clear(MB_USART_TXEN_PORT, MB_USART_TXEN_PIN);
-	}
+            USART_CR1(MB_USART) |= USART_CR1_TCIE; /* Enable transfer complite interrupt*/
+        }
+    }
+    /* Disable transmitter on transfer comlite*/
+    if (((USART_CR1(MB_USART) & USART_CR1_TCIE) != 0) && ((USART_SR(MB_USART) & USART_SR_TC) != 0))
+    {
+        USART_CR1(MB_USART) &= ~USART_CR1_TCIE;/* Disble transfer complite interrupt*/
+        USART_SR (MB_USART) &= ~USART_SR_TC;   /* Clear TC flag*/
+        /* Disable transmitter*/
+        gpio_clear(MB_USART_TXEN_PORT, MB_USART_TXEN_PIN);
+    }
 }
 

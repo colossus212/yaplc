@@ -139,10 +139,11 @@ void plc_heart_beat_poll(void)
 #ifdef PLC_CFG_INPF
 /*50Hz filters*/
 #define PLC_INPF_TIMEOUT 20 /*20ms timeout*/
-typedef struct{
+typedef struct
+{
     uint32_t cnt;
     bool    flg;
-}plc_inpf;
+} plc_inpf;
 
 void plc_inpf_init(plc_inpf * self)
 {
@@ -152,24 +153,33 @@ void plc_inpf_init(plc_inpf * self)
 
 bool plc_inpf_do(plc_inpf * self, bool pin)
 {
-    if (pin){
+    if (pin)
+    {
         self->flg = true;
         self->cnt = 0;
         return true;
-    }else{
+    }
+    else
+    {
         return self->flg;
     }
 }
 
 void plc_inpf_poll(plc_inpf * self, bool pin)
 {
-    if (pin){
+    if (pin)
+    {
         self->flg = true;
         self->cnt = 0;
-    }else{
-        if (PLC_INPF_TIMEOUT < self->cnt){
+    }
+    else
+    {
+        if (PLC_INPF_TIMEOUT < self->cnt)
+        {
             self->flg = false;
-        }else{
+        }
+        else
+        {
             self->cnt++;
         }
     }
@@ -354,12 +364,12 @@ void plc_iom_check_print(uint16_t i)
 {
     int cnt;
     cnt = sprintf(
-                  print_buf,
-                  "Checking: %%%c%c%d",
-                  print_lt[PLC_APP->l_tab[i]->v_type],
-                  print_sz[PLC_APP->l_tab[i]->v_size],
-                  (int)PLC_APP->l_tab[i]->proto
-                  );
+              print_buf,
+              "Checking: %%%c%c%d",
+              print_lt[PLC_APP->l_tab[i]->v_type],
+              print_sz[PLC_APP->l_tab[i]->v_size],
+              (int)PLC_APP->l_tab[i]->proto
+          );
     if( PLC_APP->l_tab[i]->a_size )
     {
         uint16_t j;
@@ -422,7 +432,8 @@ bool PLC_IOM_LOCAL_CHECK(uint16_t i)
             return true;
         }
     }
-    case PLC_LT_M:default:
+    case PLC_LT_M:
+    default:
     {
         plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
         return false;
@@ -473,7 +484,7 @@ uint32_t PLC_IOM_LOCAL_SET(uint16_t i)
 {
     if( PLC_LT_Q == plc_curr_app->l_tab[i]->v_type )
     {
-         plc_set_dout( plc_curr_app->l_tab[i]->a_data[0], *(bool *)(plc_curr_app->l_tab[i]->v_buf) );
+        plc_set_dout( plc_curr_app->l_tab[i]->a_data[0], *(bool *)(plc_curr_app->l_tab[i]->v_buf) );
     }
     return 0;
 }

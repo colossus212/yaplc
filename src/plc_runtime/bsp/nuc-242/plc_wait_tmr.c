@@ -21,10 +21,10 @@ void plc_wait_tmr_init(void)
     timer_continuous_mode  ( PLC_WAIT_TMR );
     timer_set_period       ( PLC_WAIT_TMR, 1000 ); //1KHz
 
-	timer_enable_counter   ( PLC_WAIT_TMR );
-	timer_enable_irq       ( PLC_WAIT_TMR, TIM_DIER_UIE);
+    timer_enable_counter   ( PLC_WAIT_TMR );
+    timer_enable_irq       ( PLC_WAIT_TMR, TIM_DIER_UIE);
 
-	nvic_enable_irq( PLC_WAIT_TMR_VECTOR );
+    nvic_enable_irq( PLC_WAIT_TMR_VECTOR );
 }
 
 uint32_t plc_sys_timer = 0;
@@ -34,8 +34,8 @@ void PLC_WAIT_TMR_ISR(void)
     if (timer_get_flag(PLC_WAIT_TMR, TIM_SR_UIF))
     {
 
-		/* Clear compare interrupt flag. */
-		timer_clear_flag(PLC_WAIT_TMR, TIM_SR_UIF);
+        /* Clear compare interrupt flag. */
+        timer_clear_flag(PLC_WAIT_TMR, TIM_SR_UIF);
         plc_sys_timer++;
         plc_iom_tick();
     }

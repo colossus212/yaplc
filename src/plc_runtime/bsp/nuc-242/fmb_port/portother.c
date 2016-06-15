@@ -2,7 +2,7 @@
  * FreeModbus Libary: Atmel AT91SAM3S Demo Application
  * Copyright (C) 2010 Christian Walter <cwalter@embedded-solutions.at>
  *
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -13,7 +13,7 @@
  *   documentation and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *   derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * IF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -43,24 +43,24 @@ static ULONG    ulNesting;
 
 static inline uint8_t getprimask(void)
 {
-  uint32_t primask;
-  __asm__ __volatile__
+    uint32_t primask;
+    __asm__ __volatile__
     (
-     "\tmrs  %0, primask\n"
-     : "=r" (primask)
-     :
-     : "memory");
-  return (uint8_t)primask;
+        "\tmrs  %0, primask\n"
+    : "=r" (primask)
+            :
+            : "memory");
+    return (uint8_t)primask;
 }
 
 static inline void setprimask(uint32_t primask)
 {
-  __asm__ __volatile__
+    __asm__ __volatile__
     (
-      "\tmsr primask, %0\n"
-      :
-      : "r" (primask)
-      : "memory");
+        "\tmsr primask, %0\n"
+    :
+    : "r" (primask)
+            : "memory");
 }
 /* ----------------------- Critical Section handler -----------------------------*/
 /* Check if PRIMASK was set, and disable it on entry. On exit, if it was originally
@@ -70,10 +70,10 @@ vMBPortEnterCritical( void )
 {
     if(ulNesting == 0)
     {
-		xOriginalState = getprimask();
+        xOriginalState = getprimask();
     }
     ulNesting++;
-	setprimask(1);
+    setprimask(1);
 }
 
 void
@@ -82,8 +82,8 @@ vMBPortExitCritical( void )
     ulNesting--;
     if(ulNesting == 0)
     {
-		setprimask(xOriginalState);
-	}
+        setprimask(xOriginalState);
+    }
 }
 
 /* ----------------------- Close Ports -----------------------------*/

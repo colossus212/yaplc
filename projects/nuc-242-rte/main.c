@@ -177,11 +177,13 @@ int main(void)
 
     plc_backup_validate();
 
-    while(1){
+    while(1)
+    {
         static uint32_t i = 0,i_z = 0, j=0;
 
         i = rtc_get_counter_val();
-        if (i != i_z){
+        if (i != i_z)
+        {
             i_z = i;
             gpio_toggle(PLC_LED_TX_PORT, PLC_LED_TX_PIN);
         }
@@ -226,35 +228,35 @@ eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs,
     int             iRegIndex;
 
     if( ( usAddress >= REG_HOLDING_START ) &&
-        ( usAddress + usNRegs <= REG_HOLDING_START + REG_HOLDING_NREGS ) )
+            ( usAddress + usNRegs <= REG_HOLDING_START + REG_HOLDING_NREGS ) )
     {
         iRegIndex = ( int )( usAddress - usRegHoldingStart );
         switch ( eMode )
         {
-                /* Pass current register values to the protocol stack. */
-            case MB_REG_READ:
-                while( usNRegs > 0 )
-                {
-                    *pucRegBuffer++ =
-                        ( unsigned char )( usRegHoldingBuf[iRegIndex] >> 8 );
-                    *pucRegBuffer++ =
-                        ( unsigned char )( usRegHoldingBuf[iRegIndex] &
-                                           0xFF );
-                    iRegIndex++;
-                    usNRegs--;
-                }
-                break;
+            /* Pass current register values to the protocol stack. */
+        case MB_REG_READ:
+            while( usNRegs > 0 )
+            {
+                *pucRegBuffer++ =
+                    ( unsigned char )( usRegHoldingBuf[iRegIndex] >> 8 );
+                *pucRegBuffer++ =
+                    ( unsigned char )( usRegHoldingBuf[iRegIndex] &
+                                       0xFF );
+                iRegIndex++;
+                usNRegs--;
+            }
+            break;
 
-                /* Update current register values with new values from the
-                 * protocol stack. */
-            case MB_REG_WRITE:
-                while( usNRegs > 0 )
-                {
-                    usRegHoldingBuf[iRegIndex] = *pucRegBuffer++ << 8;
-                    usRegHoldingBuf[iRegIndex] |= *pucRegBuffer++;
-                    iRegIndex++;
-                    usNRegs--;
-                }
+            /* Update current register values with new values from the
+             * protocol stack. */
+        case MB_REG_WRITE:
+            while( usNRegs > 0 )
+            {
+                usRegHoldingBuf[iRegIndex] = *pucRegBuffer++ << 8;
+                usRegHoldingBuf[iRegIndex] |= *pucRegBuffer++;
+                iRegIndex++;
+                usNRegs--;
+            }
         }
     }
     else
