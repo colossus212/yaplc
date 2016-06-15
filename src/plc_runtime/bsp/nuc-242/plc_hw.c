@@ -136,68 +136,6 @@ void plc_heart_beat_poll(void)
     }
 }
 
-#ifdef PLC_CFG_INPF
-/*50Hz filters*/
-#define PLC_INPF_TIMEOUT 20 /*20ms timeout*/
-typedef struct
-{
-    uint32_t cnt;
-    bool    flg;
-} plc_inpf;
-
-void plc_inpf_init(plc_inpf * self)
-{
-    self->flg = false;
-    self->cnt = 0;
-}
-
-bool plc_inpf_do(plc_inpf * self, bool pin)
-{
-    if (pin)
-    {
-        self->flg = true;
-        self->cnt = 0;
-        return true;
-    }
-    else
-    {
-        return self->flg;
-    }
-}
-
-void plc_inpf_poll(plc_inpf * self, bool pin)
-{
-    if (pin)
-    {
-        self->flg = true;
-        self->cnt = 0;
-    }
-    else
-    {
-        if (PLC_INPF_TIMEOUT < self->cnt)
-        {
-            self->flg = false;
-        }
-        else
-        {
-            self->cnt++;
-        }
-    }
-}
-
-plc_inpf inpf[8];
-
-#define PLC_INPF_INIT(i) plc_inpf_init(inpf+i-1)
-#define PLC_INPF_GET(i) (plc_inpf_do(inpf+i-1, plc_get_din(i)))
-#define PLC_INPF_POLL(i) plc_inpf_poll(inpf+i-1, plc_get_din(i))
-
-#else //PLC_CFG_INPF
-
-#define PLC_INPF_INIT(i) do{}while(0)
-#define PLC_INPF_GET(i) (plc_get_din(i))
-#define PLC_INPF_POLL(i) do{}while(0)
-
-#endif //PLC_CFG_INPF
 bool plc_get_din(uint32_t i)
 {
     switch( i )
@@ -287,6 +225,11 @@ void plc_set_aout( uint32_t i, uint32_t val )
     (void)i;
     (void)val;
 }
+
+#include "dbnc_flt.h"
+dbnc_flt_t in_flt[8];
+#define PLC_INPF_INIT(i) dbnc_flt_init(in_flt+i-1);
+
 //Digital io
 #define LOCAL_PROTO dio
 void PLC_IOM_LOCAL_INIT(void)
@@ -390,68 +333,88 @@ void plc_iom_check_print(uint16_t i)
     plc_curr_app->log_msg_post(LOG_DEBUG, (char *)print_buf, cnt+1);
     PLC_APP->log_msg_post(LOG_DEBUG, (char *)print_buf, cnt+1);
 }
+const char plc_iom_err_proto[]   = "IO protocol is not supported!";
+const uint32_t plc_iom_err_psz   = sizeof(plc_iom_err_proto);
 
-const char plc_iom_err_proto[] = "IO protocol is not supported!";
-const uint32_t plc_iom_err_psz = sizeof(plc_iom_err_proto);
+const char plc_dio_err_sz[]      = "Wrong variable size!";
 
-const char plc_dio_err_sz[]    = "All digital io mus be BOOL!";
-const char plc_dio_err_asz[]   = "Digital io address must be one number!";
-const char plc_dio_err_tp[]    = "Digital io does not support memory locations!";
-const char plc_dio_err_ilim[]  = "Digital input must have address 1...8!";
-const char plc_dio_err_olim[]  = "Digital input must have address 1...4!";
+const char plc_dio_err_asz[]     = "Digital I/O address must be one number!";
+const char plc_dio_err_asz_flt[] = "Digital input filter address must consist of two numbers!";
+
+const char plc_dio_err_tp[]      = "Digital I/O does not support memory locations!";
+const char plc_dio_err_tp_flt[]  = "Digital input filter must have memory type!";
+
+const char plc_dio_err_ilim[]    = "Digital input must have address 1...8!";
+const char plc_dio_err_flt_lim[] = "Digital input must have 0 or 1 address!";
+const char plc_dio_err_olim[]    = "Digital output must have address 1...4!";
 
 bool PLC_IOM_LOCAL_CHECK(uint16_t i)
 {
     uint32_t addr;
-    //Check size
-    if (PLC_LSZ_X != PLC_APP->l_tab[i]->v_size)
+    switch( PLC_APP->l_tab[i]->v_size )
     {
-        plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
-        return false;
-    }
+    case PLC_LSZ_X:
+        if (1 != PLC_APP->l_tab[i]->a_size){
+            plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_asz, sizeof(plc_dio_err_asz));
+            return false;
+        }
 
-    if (1 != PLC_APP->l_tab[i]->a_size)
-    {
-        plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_asz, sizeof(plc_dio_err_asz));
-        return false;
-    }
-
-    addr = PLC_APP->l_tab[i]->a_data[0];
-    //Check type and address
-    switch (PLC_APP->l_tab[i]->v_type)
-    {
-    case PLC_LT_I:
-    {
-        if (addr < 1 || addr > 8)
+        addr = PLC_APP->l_tab[i]->a_data[0];
+        //Check type and address
+        switch (PLC_APP->l_tab[i]->v_type)
         {
+        case PLC_LT_I:
+            if (addr < 1 || addr > 8){
+                plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_ilim, sizeof(plc_dio_err_ilim));
+                return false;
+            }else{
+                return true;
+            }
+
+        case PLC_LT_M:
+        default:
+            plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
+            return false;
+
+        case PLC_LT_Q:
+            if (addr < 1 || addr > 4){
+                plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_olim, sizeof(plc_dio_err_olim));
+                return false;
+            }else{
+                return true;
+            }
+        }
+        return true;
+
+    case PLC_LSZ_B:
+        if (2 != PLC_APP->l_tab[i]->a_size){
+            plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_asz_flt, sizeof(plc_dio_err_asz_flt));
+            return false;
+        }
+
+        if (PLC_LT_M != PLC_APP->l_tab[i]->v_type){
+            plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_tp_flt, sizeof(plc_dio_err_tp_flt));
+            return false;
+        }
+
+        addr = PLC_APP->l_tab[i]->a_data[0];
+
+        if (addr < 1 || addr > 8){
             plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_ilim, sizeof(plc_dio_err_ilim));
             return false;
         }
-        else
-        {
-            return true;
+
+        addr = PLC_APP->l_tab[i]->a_data[1];
+        if( addr > 1 ){
+            plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_flt_lim, sizeof(plc_dio_err_flt_lim));
+            return false;
         }
-    }
-    case PLC_LT_M:
+        return true;
+
     default:
-    {
         plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_sz, sizeof(plc_dio_err_sz));
         return false;
     }
-    case PLC_LT_Q:
-    {
-        if (addr < 1 || addr > 4)
-        {
-            plc_curr_app->log_msg_post(LOG_CRITICAL, (char *)plc_dio_err_olim, sizeof(plc_dio_err_olim));
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-    }
-    return true;
 }
 
 void PLC_IOM_LOCAL_START(uint16_t lid)
@@ -460,13 +423,16 @@ void PLC_IOM_LOCAL_START(uint16_t lid)
 void PLC_IOM_LOCAL_END(uint16_t lid)
 {
 }
-uint32_t PLC_IOM_LOCAL_SCHED(uint16_t i, uint32_t tick)
+uint32_t PLC_IOM_LOCAL_SCHED(uint16_t lid, uint32_t tick)
 {
-    PLC_INPF_POLL( plc_curr_app->l_tab[i]->a_data[0] );
     return 0;
 }
 void PLC_IOM_LOCAL_POLL(uint32_t tick)
 {
+    uint32_t i;
+    for (i = 0; i < 8; i++){
+        dbnc_flt_poll(in_flt+i, tick, plc_get_din(i+1));
+    }
 }
 uint32_t PLC_IOM_LOCAL_WEIGTH(uint16_t lid)
 {
@@ -474,17 +440,40 @@ uint32_t PLC_IOM_LOCAL_WEIGTH(uint16_t lid)
 }
 uint32_t PLC_IOM_LOCAL_GET(uint16_t i)
 {
-    if( PLC_LT_I == plc_curr_app->l_tab[i]->v_type )
+    switch( plc_curr_app->l_tab[i]->v_type )
     {
-        *(bool *)(plc_curr_app->l_tab[i]->v_buf) = PLC_INPF_GET( plc_curr_app->l_tab[i]->a_data[0] );
+    case PLC_LT_I:
+        *(bool *)(plc_curr_app->l_tab[i]->v_buf) = dbnc_flt_get( in_flt + plc_curr_app->l_tab[i]->a_data[0] - 1 );
+        break;
+
+    case PLC_LT_M:
+        if (plc_curr_app->l_tab[i]->a_data[1]){
+            *(uint8_t *)(plc_curr_app->l_tab[i]->v_buf) = (uint8_t)in_flt[plc_curr_app->l_tab[i]->a_data[0] - 1].thr_on;
+        }else{
+            *(uint8_t *)(plc_curr_app->l_tab[i]->v_buf) = (uint8_t)in_flt[plc_curr_app->l_tab[i]->a_data[0] - 1].thr_off;
+        }
+        break;
+
+    default:
+        break;
     }
     return 0;
 }
 uint32_t PLC_IOM_LOCAL_SET(uint16_t i)
 {
-    if( PLC_LT_Q == plc_curr_app->l_tab[i]->v_type )
+    switch( plc_curr_app->l_tab[i]->v_type )
     {
+    case PLC_LT_Q:
         plc_set_dout( plc_curr_app->l_tab[i]->a_data[0], *(bool *)(plc_curr_app->l_tab[i]->v_buf) );
+        break;
+
+    case PLC_LT_M:
+        if (plc_curr_app->l_tab[i]->a_data[1]){
+            in_flt[plc_curr_app->l_tab[i]->a_data[0] - 1].thr_on = (uint32_t)*(uint8_t *)(plc_curr_app->l_tab[i]->v_buf);
+        }else{
+            in_flt[plc_curr_app->l_tab[i]->a_data[0] - 1].thr_off = (uint32_t)*(uint8_t *)(plc_curr_app->l_tab[i]->v_buf);
+        }
+        break;
     }
     return 0;
 }

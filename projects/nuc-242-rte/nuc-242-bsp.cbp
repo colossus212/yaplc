@@ -146,6 +146,10 @@
 		<Unit filename="../../src/plc_runtime/bsp/nuc-242/plc_wait_tmr.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/plc_runtime/dbnc_flt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/plc_runtime/dbnc_flt.h" />
 		<Unit filename="../../src/plc_runtime/frac_div.c">
 			<Option compilerVar="CC" />
 		</Unit>
